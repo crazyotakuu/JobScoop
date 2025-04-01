@@ -38,55 +38,75 @@
 ## Incomplete Issues
 - None. All planned issues for this sprint were successfully completed.
 Frontend Unit Tests
-## Frontend Unit Tests
 
+## Frontend Unit Tests
 This section includes both the React component unit tests and the Cypress end-to-end tests written during Sprint 3.
 
 ### A. React Component Unit Tests
 
 **Total Unit Test Cases: 43**
 
-These tests were written to ensure robust behavior of individual components across user registration, authentication, profile, and subscription workflows.
+These tests validate critical component behaviors across user registration, login, password reset, profile handling, and subscription management. Each test ensures UI rendering, input validation, state changes, and interaction with backend mocks.
 
-- **Signup Component Tests (`signup.test.js`)**  
-  - Validates rendering of all required input fields: Name, Email, Password, Confirm Password.  
-  - Disables the Signup button until all inputs are valid.  
-  - Ensures the Email field follows valid formatting and password meets security criteria.  
-  - Detects password mismatch and clears fields on error.  
-  - On successful API response, displays a success alert and navigates to the login page.
+#### **Signup Component Tests (`signup.test.js`)**
 
-- **Login Component Tests (`login.test.js`)**  
-  - Renders email and password fields with appropriate labels and input validation.  
-  - Disables the Login button until both fields contain valid input.  
-  - On valid credentials, stores the JWT token, and navigates to the home screen.  
-  - Handles incorrect credentials by displaying error messages and resetting inputs.  
-  - Tests navigation to Signup and Forgot Password pages via button clicks.
+- Renders all necessary form fields: Name, Email, Password, and Confirm Password.
+- Disables the "Signup" button when required fields are empty or invalid.
+- Validates email format and shows errors for incorrect input.
+- Enforces password rules including minimum length and complexity.
+- Displays an error when passwords do not match and clears the password fields.
+- Submits valid data via a mocked API call, shows a success alert, and navigates to the login page.
+- Mocks Axios and React Router navigation using `jest.mock`.
 
-- **Password Reset Component Tests (`PasswordReset.test.js`)**  
-  - Implements a 3-step password reset flow: Email input → Code verification → New password.  
-  - Validates input fields for each step and handles transitions accordingly.  
-  - Simulates both successful and failed backend interactions.  
-  - Displays success alerts and error messages based on API response.  
-  - Confirms successful reset redirects the user to the login page.
 
-- **Profile Component Tests (`Profile.test.js`)**  
-  - Ensures correct rendering of user profile information (email, name, and subscriptions).  
-  - Fetches current subscriptions on component mount.  
-  - Allows users to log out, clearing session data and redirecting appropriately.  
-  - Includes UI-level checks such as headers, sections, and labels.  
-  - Verifies navigation behavior across profile-related links.
+#### **Login Component Tests (`Login.test.js`)**
 
-- **Subscribe Component Tests (`Subscribe.test.js`)**  
-  - Verifies rendering of subscription form fields for company name, role, and career links.  
-  - Accepts valid inputs and submits them via an API call.  
-  - Displays success and error alerts based on submission status.
+- Renders login form fields: Email and Password, with correct labels.
+- Disables the "Login" button until valid credentials are entered.
+- Validates email formatting and ensures both fields are required.
+- On successful login, stores the JWT token in localStorage and redirects the user to the homepage.
+- On failure, displays an error alert and clears input fields.
+- Includes tests to verify navigation to the Signup and Forgot Password pages.
+- Mocks Axios and React Router’s `useNavigate`, as well as localStorage operations.
 
-- **Add Subscriptions Component Tests (`AddSubscriptions.test.js`)**  
-  - Renders form fields for adding multiple companies, roles, and links.  
-  - Dynamically adds and removes input sections for career links and role names.  
-  - Validates and collects all input values before submitting.  
-  - Ensures the handler is triggered with correctly structured data payload.
-  
+
+#### **Password Reset Component Tests (`PasswordReset.test.js`)**
+
+- Implements a multi-step reset flow: enter email → verify code → reset password.
+- Validates the email field and handles valid and invalid submissions.
+- Verifies that the correct step is shown after successful email submission.
+- Shows an error alert for invalid or expired codes.
+- Ensures both password fields match and meet complexity rules before enabling reset.
+- On successful reset, shows an alert and redirects to the login page.
+- Uses mock implementations for `axios`, `navigate`, and routing.
+
+#### **Profile Component Tests (`Profile.test.js`)**
+
+- Renders user information like name and email correctly.
+- Fetches and displays a list of user subscriptions on mount.
+- Allows editing of user details (like name) and handles form submission.
+- Includes tests for logout behavior and profile-specific navigation.
+- Mocks the `AuthContext`, localStorage, and navigation hooks to simulate authentication state and transitions.
+
+#### **Subscribe Component Tests (`Subscribe.test.js`)**
+
+- Renders subscription form fields for company, role names, and career links.
+- Accepts user input and submits form data to the backend via a mocked API.
+- Displays success alerts for valid submissions.
+- Shows error alerts when the backend call fails or input is invalid.
+- Handles dynamic form behavior with loading states and field validations.
+
+
+#### **Add Subscriptions Component Tests (`AddSubscriptions.test.js`)**
+
+- Renders a dynamic form that allows users to add multiple companies, career links, and roles.
+- Adds and removes input sections dynamically for career sites and job roles.
+- Validates all fields before allowing submission.
+- Calls the correct submission handler with a complete payload of new subscriptions.
+- Ensures fetch mocking and navigation behavior are tested correctly.
+- Includes utility setup for `act`, `fireEvent`, and userEvent simulation to capture real interaction behavior.
+
+
 ### B. Cypress End-to-End Tests
 
 **Total Cypress Test Cases: 34**
