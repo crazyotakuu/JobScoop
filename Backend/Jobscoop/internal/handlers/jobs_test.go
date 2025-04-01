@@ -322,3 +322,58 @@ func TestGetAllJobs(t *testing.T) {
 		assert.NoError(t, err, "Not all database expectations were met")
 	})
 }
+
+// func TestFetchJobs(t *testing.T) {
+//  // Save original HTTP client to restore later
+//  originalHttpClient := http.DefaultClient
+
+//  // Mock HTTP client for API calls
+//  http.DefaultClient = &http.Client{
+//      Transport: &MockLinkedInAPI{},
+//  }
+
+//  // Set environment variable for API key
+//  os.Setenv("SCRAPING_DOG_API_KEY", "mock-api-key")
+
+//  // Restore original HTTP client after test
+//  defer func() {
+//      http.DefaultClient = originalHttpClient
+//      os.Unsetenv("SCRAPING_DOG_API_KEY")
+//  }()
+
+//  t.Run("Fetches and filters jobs correctly", func(t *testing.T) {
+//      // Create response recorder for the HTTP error response
+//      w := httptest.NewRecorder()
+
+//      jobs, err := fetchJobs("Mock Company", "Software Engineer", w)
+//      assert.NoError(t, err)
+
+//      // Should filter to return only the jobs that match both company and role
+//      assert.Equal(t, 2, len(jobs), "Expected 2 jobs after filtering")
+
+//      // Check that the first job matches expected criteria
+//      job := jobs[0]
+//      assert.Equal(t, "Mock Company", job["company_name"], "Company name doesn't match")
+
+//      // Check that we have both job types in the results
+//      jobPositions := []string{
+//          jobs[0]["job_position"].(string),
+//          jobs[1]["job_position"].(string),
+//      }
+//      assert.Contains(t, jobPositions, "Software Engineer", "Missing expected job position")
+//      assert.Contains(t, jobPositions, "Senior Software Engineer", "Missing expected job position")
+//  })
+// }
+
+func TestIsCommonWord(t *testing.T) {
+    commonWords := []string{"and", "or", "the", "for", "in", "at", "of", "to", "a", "an"}
+    nonCommonWords := []string{"job", "developer", "engineer", "senior", "software"}
+
+    for _, word := range commonWords {
+        assert.True(t, isCommonWord(word), "Expected %s to be identified as common word", word)
+    }
+
+    for _, word := range nonCommonWords {
+        assert.False(t, isCommonWord(word), "Expected %s to be identified as non-common word", word)
+    }
+}
