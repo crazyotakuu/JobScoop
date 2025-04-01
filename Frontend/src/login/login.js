@@ -52,6 +52,7 @@ function Login() {
         console.log("Validating...");
         let data = { "email": username, "password": password }
         let response = await fetchData(data)
+        console.log("")
         if (response.status===200) {
             let userData = { "username": username }
             login(response.data.token, userData)
