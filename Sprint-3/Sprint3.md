@@ -87,65 +87,70 @@ These tests were written to ensure robust behavior of individual components acro
   - Validates and collects all input values before submitting.  
   - Ensures the handler is triggered with correctly structured data payload.
   
-## Cypress End-to-End Test Cases (Total: 25)
+### B. Cypress End-to-End Tests
 
-### Login Tests
-1. Renders login form fields: email and password.
-2. Disables login button until valid input is provided.
-3. Submits valid credentials and receives token from mocked API.
-4. Stores JWT token and navigates to home page on success.
-5. Displays error message on incorrect credentials.
-6. Clears input fields on login failure.
-7. Redirects to Signup page when "Sign Up" button is clicked.
-8. Redirects to Forgot Password page when "Forgot Password" is clicked.
-9. Performs logout and clears session data.
+**Total Cypress Test Cases: 43**
 
----
+These tests comprehensively validate real user workflows across login, signup, password reset, profile, and subscription management functionalities. Each test ensures the interface behaves correctly, validations are enforced, and backend interactions are handled accurately.
 
-### Password Reset Tests
-10. Renders initial email submission step.
-11. Validates and submits email for reset.
-12. Displays error alert on invalid email or server failure.
-13. Proceeds to code verification step after successful email submission.
-14. Verifies token input and proceeds on success.
-15. Displays error on incorrect or expired token.
-16. Renders password reset form.
-17. Validates new password and confirm password.
-18. Submits password reset and shows success alert.
-19. Redirects to login page on successful reset.
 
-### Signup Tests
-20. Renders signup form with name, email, password, confirm password.
-21. Validates input fields and disables submit until valid.
-22. Displays error alerts for invalid email or weak passwords.
-23. Submits signup request and receives success response.
-24. Shows success message and redirects to login page.
+#### **Login Tests (`logintest.cy.js`)**
 
-### Subscription Tests
-25. Logs in and navigates to Manage Subscriptions page.
-26. Renders existing subscription list.
-27. Adds a new subscription and verifies form inputs.
-28. Sends API request and confirms success alert.
-29. Modifies existing subscription and checks updated state.
-30. Deletes a subscription and confirms removal from UI.
-31. Validates error handling when API fails.
+- **Login Page Test Suite**
+  - Renders the email and password input fields correctly.
+  - Renders a login button and ensures it is present on the page.
+  - Successfully logs into the application using valid credentials and receives a mocked token response.
+  - Displays error messages when invalid credentials are submitted.
+  - Validates that required fields must be filled before login (checks for missing username or password).
+  - Prevents multiple submissions when the login button is clicked rapidly.
+  - Logs out the user successfully and ensures session data is cleared.
 
-### Profile Tests (`profile.cy.js`)
-32. Logs in and navigates to Profile page.
-33. Fetches user data and displays profile info.
-34. Renders list of current subscriptions.
-35. Allows logout from profile page.
-36. Navigates to other pages using profile nav links.
 
-### New Subscription Flow Tests (`subscriptiontest.cy.js`)
-37. Logs in and navigates to Add Subscriptions page.
-38. Dynamically adds company, links, and roles.
-39. Validates input data for all dynamic fields.
-40. Submits complete subscription form and verifies API call.
-41. Edits subscription fields and confirms update.
-42. Deletes a specific subscription and checks UI update.
-43. Displays success and error messages appropriately.
-44. Confirms entire flow (add, edit, delete) works with valid backend responses.
+#### **Password Reset Tests (`passreset.cy.js`)**
+
+- **Password Reset Test**
+  - Renders the password reset form and input fields correctly.
+  - Enables the "Next" button only when a valid email format is entered.
+  - Displays appropriate error messages for invalid email formats.
+  - Proceeds to the code verification step upon successful email submission.
+  - Handles invalid verification codes by showing error alerts.
+  - Proceeds to the final password reset step upon entering a valid verification code.
+  - Displays an error when the new password and confirm password fields do not match.
+  - Successfully resets the password and redirects the user to the login screen.
+  - Enforces password complexity and validation requirements during reset.
+
+
+#### **Signup Tests (`signuptest.cy.js`)**
+
+- **Signup Test**
+  - Renders the signup form with all necessary fields: Name, Email, Password, and Confirm Password.
+  - Enables the signup button only when all required fields are filled with valid input.
+  - Validates email format and shows error messages for invalid entries.
+  - Enforces password rules (length, characters, etc.) before allowing submission.
+  - Shows error messages when passwords do not match.
+  - On successful account creation, redirects to the login screen.
+  - Simulates API failures and displays appropriate error messages.
+  - Disables the signup button when form fields are empty or invalid.
+  - Displays a tooltip for password requirements on focus.
+
+
+#### **Profile Tests (`profile.cy.js`)**
+
+- **Profile Page Tests**
+  - Navigates to the profile page after user login.
+  - Allows the user to change their display name and validates the change.
+  - Fetches and displays the list of active user subscriptions.
+  - Allows the user to change their password while enforcing the required validations.
+
+#### **Subscription Management Tests (`subscriptiontest.cy.js`)**
+
+- **Subscription Test Suite**
+  - Adds a new subscription with valid inputs and submits it successfully.
+  - Modifies an existing subscription and ensures the update is reflected in the UI.
+  - Deletes a subscription and verifies it is removed from the view.
+  - Allows searching through the list of subscriptions by keyword.
+  - Handles edge cases where the subscription list is empty and displays appropriate UI feedback.
+
 
 ## Backend Unit Tests
 
