@@ -37,6 +37,106 @@
 
 ## Incomplete Issues
 - None. All planned issues for this sprint were successfully completed.
+Frontend Unit Tests
+
+## ✅ Frontend Unit Test Cases (Total: 43)
+
+### 📝 Signup Component (`signup.test.js`) – 7 Test Cases
+1. Renders all form fields: name, email, password, confirm password.
+2. Disables signup button until valid input is provided.
+3. Validates correct email format.
+4. Enforces password requirements (length, characters).
+5. Shows error and clears password fields on mismatch.
+6. Displays success alert upon successful signup.
+7. Redirects user to login page after successful signup.
+
+---
+
+###  Login Component (`login.test.js`) – 6 Test Cases
+8. Renders email and password input fields.
+9. Disables login button until valid input is provided.
+10. Stores JWT token upon successful login.
+11. Redirects user to home page on login success.
+12. Displays error and clears input fields on login failure.
+13. Navigates to Signup and Forgot Password pages on button click.
+
+---
+
+### 📝 Password Reset Component (`PasswordReset.test.js`) – 9 Test Cases
+14. Renders email input step correctly.
+15. Validates email and sends request to backend.
+16. Displays success alert and moves to code verification step.
+17. Shows error alert on invalid email or failed request.
+18. Renders code verification input field.
+19. Validates token input and verifies with backend.
+20. Moves to password reset step on successful token verification.
+21. Shows error on expired or incorrect token.
+22. Successfully resets password and redirects to login page.
+
+---
+
+### 📝 Profile Component (`Profile.test.js`) – 6 Test Cases
+23. Correctly renders user profile information (name and email).
+24. Fetches subscriptions when the component loads.
+25. Displays all subscription items in list format.
+26. Allows logout and clears session data.
+27. Navigates to other pages via profile navigation links.
+28. Includes labels, headings, and proper section structure in UI.
+
+---
+
+### 📝 Subscribe Component (`Subscribe.test.js`) – 4 Test Cases
+29. Renders subscription form input fields properly.
+30. Accepts valid input and submits data to backend.
+31. Displays success alert on successful submission.
+32. Displays error alert on API failure or invalid input.
+
+---
+
+### 📝 Add Subscriptions Component (`AddSubscriptions.test.js`) – 5 Test Cases
+33. Renders company name, career links, and role input fields.
+34. Dynamically adds new input rows for career links and roles.
+35. Dynamically removes input rows as expected.
+36. Validates and collects all dynamic field data.
+37. Calls add subscription handler with expected data payload.
+
+B. Cypress End-to-End Tests
+
+Total Cypress testcases: 25
+
+These tests validate full user flows:
+
+Login Tests
+
+Verify form field validations, successful login with a mocked API response (token retrieval), error handling for incorrect credentials, and logout functionality.
+
+Password Reset Tests
+
+Ensure the multi-step password reset flow functions correctly—from email submission to code verification and final password reset—handling errors at each step.
+
+Signup Tests
+
+Validate that the signup process includes proper input validations and user feedback, with navigation to the login page on success.
+
+Subscription Tests
+
+Test the subscription management features (adding, modifying, and deleting subscriptions) following a login, with all API calls appropriately intercepted and validated.
+
+Profile Tests (profile.cy.js)
+
+Confirms the rendering of profile information and subscription lists.
+
+Validates API interaction for fetching user data.
+
+Ensures proper navigation and logout behavior.
+
+New Subscription Flow Tests (subscriptiontest.cy.js)
+
+Simulates complete subscription flow: adding, editing, and deleting.
+
+Validates form input and error handling.
+
+Verifies API calls and UI updates on successful actions.
 
 ## Backend Unit Tests
 
