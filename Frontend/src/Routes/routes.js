@@ -9,6 +9,7 @@ import Layout from '../Layout';
 import Trends from '../Trends';
 import AddSubscriptions from '../subscribe/Add_Subscriptions';
 import Subscribe from '../subscribe/Subscribe';
+import Profile from '../Profile';
 const router = createBrowserRouter([
   {
 
@@ -48,6 +49,11 @@ const router = createBrowserRouter([
       {
         path: '/trends',
         element: <ProtectedRoute><Trends></Trends></ProtectedRoute>,
+        errorElement: <div>ERROR 404: NOT FOUND</div>
+      },
+      {
+        path: '/profile',
+        element:<ProtectedRoute><Profile /></ProtectedRoute> ,
         errorElement: <div>ERROR 404: NOT FOUND</div>
       },
       {
