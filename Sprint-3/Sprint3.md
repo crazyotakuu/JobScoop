@@ -15,8 +15,11 @@
 4. Write unit test for **Get All Jobs API**.
 5. Write unit test for **Get All User API**.
 6. Write unit test for **Update User API**.
-7. Implement toggling functionality 
-8. Integrate the frontend with the backend APIs.
+7. Implement **Toggling functionality** in Manage Subscription form.
+8. Implement **USER PROFILE** page in frontend that allows user to update their details
+9. Implement **Landing page** for the Application where we fetch all the Active Subscriptions and display all the Job Roles available.
+10. Implement **Filtering Functionality** for Manage Subscriptions
+11. Integrate the frontend with the backend APIs.
 
 
 ## Completed Issues
