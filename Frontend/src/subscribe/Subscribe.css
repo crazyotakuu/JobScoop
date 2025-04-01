@@ -98,3 +98,8 @@ color: grey;
   min-height: 100vh;
   background-color: #f8f9fa;
 }
+
+.table-cell{
+  font-weight: bold;
+  color: white;
+}

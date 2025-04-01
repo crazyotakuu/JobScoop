@@ -57,6 +57,16 @@ function Header() {
                         >
                             TRENDS
                         </NavLink>
+                        <NavLink
+                            to="/profile"
+                            className={({ isActive }) =>
+                                isActive
+                                    ? "nav-item nav-active-link"
+                                    : "nav-item nav-inactive"
+                            }
+                        >
+                            PROFILE
+                        </NavLink>
                     </div>
 
                     <Tooltip title="Logout">
