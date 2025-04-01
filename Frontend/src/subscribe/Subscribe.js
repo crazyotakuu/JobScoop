@@ -1,17 +1,64 @@
-
 import React, { useState, useEffect, useContext } from 'react';
 import {
     Button, ButtonGroup, Snackbar, Alert, Box, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, Backdrop, CircularProgress, IconButton, Tooltip
+    TableHead, TableRow, Paper, Backdrop, CircularProgress, IconButton, Tooltip,
+    Switch, TextField, InputAdornment, styled
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from '@mui/icons-material/Edit';
+import SearchIcon from '@mui/icons-material/Search';
 import { cloneDeep } from "lodash";
 import _ from "lodash";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import "./Subscribe.css";
+
+const StyledSwitch = styled(Switch)(({ theme }) => ({
+    width: 42,
+    height: 26,
+    padding: 0,
+    display: 'flex',
+    '& .MuiSwitch-switchBase': {
+        padding: 1,
+        transitionDuration: '300ms',
+        '&.Mui-checked': {
+            transform: 'translateX(16px)',
+            color: '#fff',
+            '& + .MuiSwitch-track': {
+                backgroundColor: '#4caf50',
+                opacity: 1,
+                border: 0,
+            },
+        },
+        '&.Mui-disabled': {
+            color: theme.palette.action.disabled,
+            '& + .MuiSwitch-track': {
+                opacity: 0.5,
+            },
+        },
+    },
+    '& .MuiSwitch-thumb': {
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, .2)',
+        width: 24,
+        height: 24,
+        borderRadius: '50%',
+        backgroundColor: '#fff',
+        '&.Mui-disabled': {
+            backgroundColor: theme.palette.action.disabledBackground,
+        },
+    },
+    '& .MuiSwitch-track': {
+        borderRadius: 26 / 2,
+        backgroundColor: '#ccc',
+        opacity: 1,
+        transition: theme.transitions.create(['background-color'], {
+            duration: 300,
+        }),
+    },
+}));
+
+
 
 function Subscribe() {
     const [Editenable, setEditenable] = useState(false);
@@ -23,6 +70,7 @@ function Subscribe() {
     const [urloptions, seturloptions] = useState([]);
     const [subscribelist, setsubscribelist] = useState([]);
     const [subscribelistbkp, setsubscribelistbkp] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const navigate = useNavigate();
 
@@ -64,7 +112,7 @@ function Subscribe() {
         let selectedValue = event.target.value.trim();
         let temp = cloneDeep(subscribelist);
         let listcheck = []
-        console.log("check the values",name,index,event)
+        console.log("check the values", name, index, event)
         if (name == 'roleNames') {
             listcheck = roleoptions
         }
@@ -97,7 +145,7 @@ function Subscribe() {
         }
     };
 
-    const removeTag = (index, tagIndex,name) => {
+    const removeTag = (index, tagIndex, name) => {
         if (Editenable) {
             let temp = cloneDeep(subscribelist);
             temp[index][name].splice(tagIndex, 1);
@@ -205,7 +253,7 @@ function Subscribe() {
                     LoadSubscriptionData()
                     getoptions()
                 }
-                else{
+                else {
                     setsubscribelist(subscribelistbkp)
                     setsnackAlert({
                         open: true,
@@ -225,11 +273,17 @@ function Subscribe() {
             const response = await axios.post('http://localhost:8080/fetch-user-subscriptions', payload);
 
             if (response.status == 200) {
+                // Add active status to each subscription if it doesn't exist
+                const subscriptionsWithActive = response.data.subscriptions.map(sub => ({
+                    ...sub,
+                    // active: sub.hasOwnProperty('active') ? sub.active : true
+                }));
+
                 setloading(false);
-                setsubscribelist(response.data.subscriptions)
-                setsubscribelistbkp(response.data.subscriptions)
+                setsubscribelist(subscriptionsWithActive);
+                setsubscribelistbkp(subscriptionsWithActive);
                 let arr = []
-                response.data.subscriptions.forEach((item) => {
+                subscriptionsWithActive.forEach((item) => {
                     arr.push({ companyNameErr: false, urlerr: false, roleNamesErr: false })
                 })
                 seterrorlist(arr)
@@ -267,13 +321,34 @@ function Subscribe() {
         }
     }
 
+    const handleToggleChange = (index) => {
+        if (Editenable) {
+            let temp = cloneDeep(subscribelist);
+            temp[index].active = !temp[index].active;
+            setsubscribelist(temp);
+        }
+    };
+
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const filteredSubscribeList = subscribelist.filter(sub => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            (sub.companyName && sub.companyName.toLowerCase().includes(searchLower)) ||
+            (sub.roleNames && sub.roleNames.some(role => role.toLowerCase().includes(searchLower))) ||
+            (sub.careerLinks && sub.careerLinks.some(link => link.toLowerCase().includes(searchLower)))
+        );
+    });
+
     useEffect(() => {
         LoadSubscriptionData()
         getoptions()
     }, []);
 
     return (
-        <div className=" main-container container-fluid p-0">
+        <div className="main-container container-fluid p-0">
             {loading ? (
                 <Backdrop
                     sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -320,6 +395,30 @@ function Subscribe() {
                                         </div>
                                     </div>
 
+                                    <Box sx={{ mb: 3, maxWidth: '600px' }}>
+                                        <TextField
+                                            fullWidth
+                                            variant="outlined"
+                                            placeholder="Search by company, role, or career link..."
+                                            value={searchTerm}
+                                            onChange={handleSearchChange}
+                                            size="small"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <SearchIcon color="primary" />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: '8px',
+                                                    backgroundColor: '#f8f9fa',
+                                                }
+                                            }}
+                                        />
+                                    </Box>
+
                                     <TableContainer component={Paper} elevation={0} className="border">
                                         <Table>
                                             <TableHead sx={{ backgroundColor: "#3f51b5" }}>
@@ -327,132 +426,158 @@ function Subscribe() {
                                                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Company Name</TableCell>
                                                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Career Links</TableCell>
                                                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Job Roles</TableCell>
+                                                    <TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Active</TableCell>
                                                     <TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {subscribelist != null && subscribelist.length > 0 ? (
-                                                    subscribelist.map((data, index) => (
-                                                        <TableRow key={index} hover>
-                                                            {/* Company Name Input */}
-                                                            <TableCell>
-                                                                <div className="position-relative">
-                                                                    <input
-                                                                        type="text"
-                                                                        id={`companyName-${index}`} 
-                                                                        name="companyName"
-                                                                        list="companyName-options"
-                                                                        className={`form-control ${errorlist[index]?.companyNameerr ? "is-invalid" : ""}`}
-                                                                        placeholder="Select or type a company"
-                                                                        value={data.companyName}
-                                                                        onClick={(e) => Editenable && clear(e, index)}
-                                                                        onFocus={(e) => Editenable && clear(e, index)}
-                                                                        onChange={(e) => onChange(e, index)}
-                                                                        disabled={!Editenable}
-                                                                    />
-                                                                    <datalist id="companyName-options">
-                                                                        {companyoptions.map((item) => (
-                                                                            <option key={item} value={item} />
+                                                {filteredSubscribeList != null && filteredSubscribeList.length > 0 ? (
+                                                    filteredSubscribeList.map((data, index) => {
+                                                        const originalIndex = subscribelist.findIndex(item =>
+                                                            item.companyName === data.companyName &&
+                                                            JSON.stringify(item.roleNames) === JSON.stringify(data.roleNames)
+                                                        );
+
+                                                        return (
+                                                            <TableRow key={index} hover>
+                                                                {/* Company Name Input */}
+                                                                <TableCell>
+                                                                    <div className="position-relative">
+                                                                        <input
+                                                                            type="text"
+                                                                            id={`companyName-${originalIndex}`}
+                                                                            name="companyName"
+                                                                            list="companyName-options"
+                                                                            className={`form-control ${errorlist[originalIndex]?.companyNameerr ? "is-invalid" : ""}`}
+                                                                            placeholder="Select or type a company"
+                                                                            value={data.companyName}
+                                                                            onClick={(e) => Editenable && clear(e, originalIndex)}
+                                                                            onFocus={(e) => Editenable && clear(e, originalIndex)}
+                                                                            onChange={(e) => onChange(e, originalIndex)}
+                                                                            disabled={!Editenable}
+                                                                        />
+                                                                        <datalist id="companyName-options">
+                                                                            {companyoptions.map((item) => (
+                                                                                <option key={item} value={item} />
+                                                                            ))}
+                                                                        </datalist>
+                                                                    </div>
+                                                                </TableCell>
+
+                                                                {/* Career Links Input */}
+                                                                <TableCell>
+                                                                    <div className={`multi-select rounded ${data.roleNameserr ? "border-danger" : "border"}`}>
+                                                                        {data.careerLinks.map((role, tagIndex) => (
+                                                                            <span key={role} className="tag bg-light text-primary rounded-pill px-2 py-1 me-1 mb-1 d-inline-flex align-items-center">
+                                                                                {role}
+                                                                                {Editenable && (
+                                                                                    <span className="ms-1 cursor-pointer" onClick={() => removeTag(originalIndex, tagIndex, "careerLinks")}>
+                                                                                        ×
+                                                                                    </span>
+                                                                                )}
+                                                                            </span>
+                                                                        ))}
+                                                                        <input
+                                                                            type="text"
+                                                                            name='carrerLinks'
+                                                                            id={`careerLinks-${originalIndex}`}
+                                                                            list={`carrer-options-${originalIndex}`}
+                                                                            className="multi-input border-0 flex-grow-1"
+                                                                            placeholder={Editenable ? "Select or type..." : ""}
+                                                                            onInput={(e) => onMultiSelectChange(e, originalIndex, "careerLinks")}
+                                                                            onKeyDown={(e) => handleEnterKey(e, originalIndex, "careerLinks")}
+                                                                            disabled={!Editenable}
+                                                                        />
+                                                                    </div>
+                                                                    <datalist id={`carrer-options-${originalIndex}`}>
+                                                                        {(urloptions[originalIndex] != undefined ? urloptions[originalIndex] : []).map((role) => (
+                                                                            <option key={role} value={role} />
                                                                         ))}
                                                                     </datalist>
-                                                                </div>
-                                                            </TableCell>
+                                                                </TableCell>
 
-                                                            {/* Career Links Input */}
-                                                            <TableCell>
-                                                                <div className={`multi-select rounded ${data.roleNameserr ? "border-danger" : "border"}`}>
-                                                                    {data.careerLinks.map((role, tagIndex) => (
-                                                                        <span key={role} className="tag bg-light text-primary rounded-pill px-2 py-1 me-1 mb-1 d-inline-flex align-items-center">
-                                                                            {role}
-                                                                            {Editenable && (
-                                                                                <span className="ms-1 cursor-pointer" onClick={() => removeTag(index, tagIndex,"careerLinks")}>
-                                                                                    ×
-                                                                                </span>
-                                                                            )}
+                                                                {/* Job Roles Multi-Select */}
+                                                                <TableCell>
+                                                                    <div className={`multi-select rounded ${data.roleNameserr ? "border-danger" : "border"}`}>
+                                                                        {data.roleNames.map((role, tagIndex) => (
+                                                                            <span key={role} className="tag bg-light text-primary rounded-pill px-2 py-1 me-1 mb-1 d-inline-flex align-items-center">
+                                                                                {role}
+                                                                                {Editenable && (
+                                                                                    <span className="ms-1 cursor-pointer" onClick={() => removeTag(originalIndex, tagIndex, "roleNames")}>
+                                                                                        ×
+                                                                                    </span>
+                                                                                )}
+                                                                            </span>
+                                                                        ))}
+                                                                        <input
+                                                                            type="text"
+                                                                            id={`roleNames-${originalIndex}`}
+                                                                            list="job-roles-options"
+                                                                            className="multi-input border-0 flex-grow-1"
+                                                                            placeholder={Editenable ? "Select or type..." : ""}
+                                                                            onInput={(e) => onMultiSelectChange(e, originalIndex, "roleNames")}
+                                                                            onKeyDown={(e) => handleEnterKey(e, originalIndex, "roleNames")}
+                                                                            disabled={!Editenable}
+                                                                        />
+                                                                    </div>
+                                                                    <datalist id="job-roles-options">
+                                                                        {roleoptions.map((role) => (
+                                                                            <option key={role} value={role} />
+                                                                        ))}
+                                                                    </datalist>
+                                                                </TableCell>
+                                                                <TableCell align="center">
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                                                        <StyledSwitch
+                                                                            checked={data.active}
+                                                                            onChange={() => handleToggleChange(originalIndex)}
+                                                                            disabled={!Editenable}
+                                                                        />
+                                                                    </Box>
+                                                                </TableCell>
+
+                                                                {/* Action Buttons */}
+                                                                <TableCell align="center">
+
+                                                                    <Tooltip title="Delete">
+                                                                        <span>
+                                                                            <IconButton
+                                                                                id={`delete-${originalIndex}`}
+                                                                                color="error"
+                                                                                onClick={(e) => OnDelete(e, originalIndex)}
+                                                                                className="bg-light"
+                                                                                disabled={!Editenable}
+                                                                            >
+                                                                                <DeleteIcon />
+
+                                                                            </IconButton>
                                                                         </span>
-                                                                    ))}
-                                                                    <input
-                                                                        type="text"
-                                                                        name='carrerLinks'
-                                                                        id={`careerLinks-${index}`}
-                                                                        list={`carrer-options-${index}`}
-                                                                        className="multi-input border-0 flex-grow-1"
-                                                                        placeholder={Editenable ? "Select or type..." : ""}
-                                                                        onInput={(e) => onMultiSelectChange(e, index, "careerLinks")}
-                                                                        onKeyDown={(e) => handleEnterKey(e, index, "careerLinks")}
-                                                                        disabled={!Editenable}
-                                                                    />
-                                                                </div>
-                                                                <datalist id={`carrer-options-${index}`}>
-                                                                    {(urloptions[index] != undefined ? urloptions[index] : []).map((role) => (
-                                                                        <option key={role} value={role} />
-                                                                    ))}
-                                                                </datalist>
-                                                            </TableCell>
+                                                                    </Tooltip>
 
-                                                            {/* Job Roles Multi-Select */}
-                                                            <TableCell>
-                                                                <div className={`multi-select rounded ${data.roleNameserr ? "border-danger" : "border"}`}>
-                                                                    {data.roleNames.map((role, tagIndex) => (
-                                                                        <span key={role} className="tag bg-light text-primary rounded-pill px-2 py-1 me-1 mb-1 d-inline-flex align-items-center">
-                                                                            {role}
-                                                                            {Editenable && (
-                                                                                <span className="ms-1 cursor-pointer" onClick={() => removeTag(index, tagIndex,"roleNames")}>
-                                                                                    ×
-                                                                                </span>
-                                                                            )}
-                                                                        </span>
-                                                                    ))}
-                                                                    <input
-                                                                        type="text"
-                                                                        id={`roleNames-${index}`}
-                                                                        list="job-roles-options"
-                                                                        className="multi-input border-0 flex-grow-1"
-                                                                        placeholder={Editenable ? "Select or type..." : ""}
-                                                                        onInput={(e) => onMultiSelectChange(e, index, "roleNames")}
-                                                                        onKeyDown={(e) => handleEnterKey(e, index, "roleNames")}
-                                                                        disabled={!Editenable}
-                                                                    />
-                                                                </div>
-                                                                <datalist id="job-roles-options">
-                                                                    {roleoptions.map((role) => (
-                                                                        <option key={role} value={role} />
-                                                                    ))}
-                                                                </datalist>
-                                                            </TableCell>
-
-                                                            {/* Action Buttons */}
-                                                            <TableCell align="center">
-                                                                <Tooltip title="Delete">
-                                                                    <IconButton
-                                                                    id={`delete-${index}`}
-                                                                        color="error"
-                                                                        onClick={(e) => OnDelete(e, index)}
-                                                                        className="bg-light"
-                                                                        disabled={!Editenable}
-                                                                    >
-                                                                        <DeleteIcon />
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })
                                                 ) : (
                                                     <TableRow>
-                                                        <TableCell colSpan={4} align="center" className="py-5">
+                                                        <TableCell colSpan={5} align="center" className="py-5">
                                                             <div className="text-center">
-                                                                <div className="text-muted mb-3">No subscriptions found</div>
-                                                                <Button
-                                                                    variant="contained"
-                                                                    startIcon={<AddIcon />}
-                                                                    onClick={() => { navigate("/subscribe/addsubscriptions") }}
-                                                                    sx={{
-                                                                        backgroundColor: '#4caf50',
-                                                                        '&:hover': { backgroundColor: '#388e3c' }
-                                                                    }}
-                                                                >
-                                                                    Add Your First Subscription
-                                                                </Button>
+                                                                <div className="text-muted mb-3">
+                                                                    {searchTerm ? "No matching subscriptions found" : "No subscriptions found"}
+                                                                </div>
+                                                                {!searchTerm && (
+                                                                    <Button
+                                                                        variant="contained"
+                                                                        startIcon={<AddIcon />}
+                                                                        onClick={() => { navigate("/subscribe/addsubscriptions") }}
+                                                                        sx={{
+                                                                            backgroundColor: '#4caf50',
+                                                                            '&:hover': { backgroundColor: '#388e3c' }
+                                                                        }}
+                                                                    >
+                                                                        Add Your First Subscription
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
