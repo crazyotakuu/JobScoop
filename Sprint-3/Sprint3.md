@@ -29,6 +29,10 @@
 4. Implement toggling functionality on backend. (Completed)
 5. Unit tests for API handlers written. (Completed)
 6. Frontend successfully integrated with the backend APIs. (Completed)
+7. Implement **Toggling functionality** in Manage Subscription form. (Completed)
+8. Implement **USER PROFILE** page in frontend that allows user to update their details (Completed)
+9. Implement **Landing page** for the Application where we fetch all the Active Subscriptions and display all the Job Roles available. (Completed)
+10. Implement **Filtering Functionality** for Manage Subscriptions (Completed)
 
 
 ## Incomplete Issues
