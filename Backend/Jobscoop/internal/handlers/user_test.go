@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-
+	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -664,6 +664,117 @@ func TestGetUserHandler(t *testing.T) {
 			}
 
 			// If an error message is expected, check for it.
+			if tt.expectedMsg != "" {
+				if msg, exists := response["message"]; !exists || msg != tt.expectedMsg {
+					t.Errorf("Expected message '%s', got '%v'", tt.expectedMsg, response["message"])
+				}
+			}
+		})
+	}
+}
+
+func TestUpdateUserHandler(t *testing.T) {
+	// Create a new mock database.
+	dbMock, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Error initializing mock database: %v", err)
+	}
+	defer dbMock.Close()
+
+	// Replace the real database with our mock.
+	originalDb := GetDB()
+	SetDB(dbMock)
+	defer SetDB(originalDb)
+
+	tests := []struct {
+		name         string
+		requestBody  map[string]string
+		mockSetup    func()
+		expectedCode int
+		expectedMsg  string
+	}{
+		{
+			name: "Successful Update",
+			requestBody: map[string]string{
+				"email": "john@example.com",
+				"name":  "John Updated",
+			},
+			mockSetup: func() {
+				// Expect an UPDATE query with the new name and email.
+				mock.ExpectExec("UPDATE users SET name = \\$1 WHERE email = \\$2").
+					WithArgs("John Updated", "john@example.com").
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			expectedCode: http.StatusOK,
+			expectedMsg:  "User updated successfully",
+		},
+		{
+			name:         "Missing Email",
+			requestBody:  map[string]string{"name": "John Updated"},
+			mockSetup:    func() {},
+			expectedCode: http.StatusBadRequest,
+			expectedMsg:  "Email and Name are required",
+		},
+		{
+			name:         "Missing Name",
+			requestBody:  map[string]string{"email": "john@example.com"},
+			mockSetup:    func() {},
+			expectedCode: http.StatusBadRequest,
+			expectedMsg:  "Email and Name are required",
+		},
+		{
+			name: "Database Error",
+			requestBody: map[string]string{
+				"email": "john@example.com",
+				"name":  "John Updated",
+			},
+			mockSetup: func() {
+				mock.ExpectExec("UPDATE users SET name = \\$1 WHERE email = \\$2").
+					WithArgs("John Updated", "john@example.com").
+					WillReturnError(fmt.Errorf("DB error"))
+			},
+			expectedCode: http.StatusInternalServerError,
+			expectedMsg:  "Error updating user",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup expected mock behavior.
+			tt.mockSetup()
+
+			// Marshal request body to JSON.
+			reqBody, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Fatalf("Failed to marshal request body: %v", err)
+			}
+
+			// Create a new HTTP request.
+			req, err := http.NewRequest("POST", "/update-user", bytes.NewBuffer(reqBody))
+			if err != nil {
+				t.Fatalf("Could not create request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			// Create a response recorder.
+			rr := httptest.NewRecorder()
+
+			// Call the UpdateUser handler.
+			handler := http.HandlerFunc(UpdateUser)
+			handler.ServeHTTP(rr, req)
+
+			// Check the status code.
+			if rr.Code != tt.expectedCode {
+				t.Errorf("Expected status %d, got %d", tt.expectedCode, rr.Code)
+			}
+
+			// Parse the response body.
+			var response map[string]interface{}
+			if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
+				t.Errorf("Failed to unmarshal response: %v", err)
+			}
+
+			// Check the response message (if expected).
 			if tt.expectedMsg != "" {
 				if msg, exists := response["message"]; !exists || msg != tt.expectedMsg {
 					t.Errorf("Expected message '%s', got '%v'", tt.expectedMsg, response["message"])
