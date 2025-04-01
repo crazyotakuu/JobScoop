@@ -567,3 +567,108 @@ func TestResetPasswordHandler(t *testing.T) {
 		})
 	}
 }
+
+func TestGetUserHandler(t *testing.T) {
+	// Initialize the sqlmock database.
+	dbMock, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Error initializing mock database: %v", err)
+	}
+	defer dbMock.Close()
+
+	// Replace the real database with our mock.
+	originalDb := GetDB()
+	SetDB(dbMock)
+	defer SetDB(originalDb)
+
+	tests := []struct {
+		name         string
+		requestBody  map[string]string
+		mockSetup    func()
+		expectedCode int
+		expectedMsg  string // used for error messages
+	}{
+		{
+			name: "Successful GetUser",
+			requestBody: map[string]string{
+				"email": "john@example.com",
+			},
+			mockSetup: func() {
+				// Return a row with user details.
+				mock.ExpectQuery("SELECT name, email, created_at FROM users WHERE email = \\$1").
+					WithArgs("john@example.com").
+					WillReturnRows(sqlmock.NewRows([]string{"name", "email", "created_at"}).
+						AddRow("John Doe", "john@example.com", "2025-03-28T00:00:00Z"))
+			},
+			expectedCode: http.StatusOK,
+			// For a successful response, we expect the JSON object to contain the user details,
+			// so no "message" error field is expected.
+			expectedMsg: "",
+		},
+		{
+			name:         "Missing Email",
+			requestBody:  map[string]string{},
+			mockSetup:    func() {},
+			expectedCode: http.StatusBadRequest,
+			expectedMsg:  "Email is required",
+		},
+		{
+			name: "User Not Found",
+			requestBody: map[string]string{
+				"email": "nonexistent@example.com",
+			},
+			mockSetup: func() {
+				mock.ExpectQuery("SELECT name, email, created_at FROM users WHERE email = \\$1").
+					WithArgs("nonexistent@example.com").
+					WillReturnError(sql.ErrNoRows)
+			},
+			expectedCode: http.StatusNotFound,
+			expectedMsg:  "User not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup the expected mock queries.
+			tt.mockSetup()
+
+			// Convert the request body to JSON.
+			reqBody, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Fatalf("Failed to marshal request body: %v", err)
+			}
+
+			// Create a new HTTP request.
+			req, err := http.NewRequest("POST", "/get-user", bytes.NewBuffer(reqBody))
+			if err != nil {
+				t.Fatalf("Could not create request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			// Create a response recorder.
+			rr := httptest.NewRecorder()
+
+			// Call the GetUser handler.
+			handler := http.HandlerFunc(GetUser)
+			handler.ServeHTTP(rr, req)
+
+			// Check that the status code matches.
+			if rr.Code != tt.expectedCode {
+				t.Errorf("Expected status %d, got %d", tt.expectedCode, rr.Code)
+			}
+
+			// Parse the response body.
+			var response map[string]interface{}
+			if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
+				t.Errorf("Failed to unmarshal response: %v", err)
+			}
+
+			// If an error message is expected, check for it.
+			if tt.expectedMsg != "" {
+				if msg, exists := response["message"]; !exists || msg != tt.expectedMsg {
+					t.Errorf("Expected message '%s', got '%v'", tt.expectedMsg, response["message"])
+				}
+			}
+		})
+	}
+}
