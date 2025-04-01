@@ -91,43 +91,65 @@ Frontend Unit Tests
 36. Validates and collects all dynamic field data.
 37. Calls add subscription handler with expected data payload.
 
-B. Cypress End-to-End Tests
+## Cypress End-to-End Test Cases (Total: 25)
 
-Total Cypress testcases: 25
+### Login Tests
+1. Renders login form fields: email and password.
+2. Disables login button until valid input is provided.
+3. Submits valid credentials and receives token from mocked API.
+4. Stores JWT token and navigates to home page on success.
+5. Displays error message on incorrect credentials.
+6. Clears input fields on login failure.
+7. Redirects to Signup page when "Sign Up" button is clicked.
+8. Redirects to Forgot Password page when "Forgot Password" is clicked.
+9. Performs logout and clears session data.
 
-These tests validate full user flows:
+---
 
-Login Tests
+### Password Reset Tests
+10. Renders initial email submission step.
+11. Validates and submits email for reset.
+12. Displays error alert on invalid email or server failure.
+13. Proceeds to code verification step after successful email submission.
+14. Verifies token input and proceeds on success.
+15. Displays error on incorrect or expired token.
+16. Renders password reset form.
+17. Validates new password and confirm password.
+18. Submits password reset and shows success alert.
+19. Redirects to login page on successful reset.
 
-Verify form field validations, successful login with a mocked API response (token retrieval), error handling for incorrect credentials, and logout functionality.
+### Signup Tests
+20. Renders signup form with name, email, password, confirm password.
+21. Validates input fields and disables submit until valid.
+22. Displays error alerts for invalid email or weak passwords.
+23. Submits signup request and receives success response.
+24. Shows success message and redirects to login page.
 
-Password Reset Tests
+### Subscription Tests
+25. Logs in and navigates to Manage Subscriptions page.
+26. Renders existing subscription list.
+27. Adds a new subscription and verifies form inputs.
+28. Sends API request and confirms success alert.
+29. Modifies existing subscription and checks updated state.
+30. Deletes a subscription and confirms removal from UI.
+31. Validates error handling when API fails.
 
-Ensure the multi-step password reset flow functions correctly—from email submission to code verification and final password reset—handling errors at each step.
+### Profile Tests (`profile.cy.js`)
+32. Logs in and navigates to Profile page.
+33. Fetches user data and displays profile info.
+34. Renders list of current subscriptions.
+35. Allows logout from profile page.
+36. Navigates to other pages using profile nav links.
 
-Signup Tests
-
-Validate that the signup process includes proper input validations and user feedback, with navigation to the login page on success.
-
-Subscription Tests
-
-Test the subscription management features (adding, modifying, and deleting subscriptions) following a login, with all API calls appropriately intercepted and validated.
-
-Profile Tests (profile.cy.js)
-
-Confirms the rendering of profile information and subscription lists.
-
-Validates API interaction for fetching user data.
-
-Ensures proper navigation and logout behavior.
-
-New Subscription Flow Tests (subscriptiontest.cy.js)
-
-Simulates complete subscription flow: adding, editing, and deleting.
-
-Validates form input and error handling.
-
-Verifies API calls and UI updates on successful actions.
+### New Subscription Flow Tests (`subscriptiontest.cy.js`)
+37. Logs in and navigates to Add Subscriptions page.
+38. Dynamically adds company, links, and roles.
+39. Validates input data for all dynamic fields.
+40. Submits complete subscription form and verifies API call.
+41. Edits subscription fields and confirms update.
+42. Deletes a specific subscription and checks UI update.
+43. Displays success and error messages appropriately.
+44. Confirms entire flow (add, edit, delete) works with valid backend responses.
 
 ## Backend Unit Tests
 
