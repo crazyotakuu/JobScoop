@@ -59,7 +59,7 @@ Frontend Unit Tests
 13. Navigates to Signup and Forgot Password pages on button click.
 
 
-### 📝 Password Reset Component (`PasswordReset.test.js`) – 9 Test Cases
+###  Password Reset Component (`PasswordReset.test.js`) – 9 Test Cases
 14. Renders email input step correctly.
 15. Validates email and sends request to backend.
 16. Displays success alert and moves to code verification step.
@@ -70,7 +70,7 @@ Frontend Unit Tests
 21. Shows error on expired or incorrect token.
 22. Successfully resets password and redirects to login page.
 
-### 📝 Profile Component (`Profile.test.js`) – 6 Test Cases
+###  Profile Component (`Profile.test.js`) – 6 Test Cases
 23. Correctly renders user profile information (name and email).
 24. Fetches subscriptions when the component loads.
 25. Displays all subscription items in list format.
