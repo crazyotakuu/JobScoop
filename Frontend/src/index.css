@@ -13,21 +13,25 @@ code {
 }
 .nav-inactive {
   text-decoration: none; 
-  color: black;
+  color: #e2e5eb;
   padding: 10px;
-  font-size: 20px;
+  font-size: 18px;
   transition: color 0.3s ease;
 }
 
 .nav-active-link {
-  color: black;
+  color: #f5d893  ;
   font-weight: bold;
-  border-bottom: 3px solid #e2e5eb; 
+  font-size: 20px;
+  border-bottom: 3px solid #f5d893 ; 
   text-decoration: none;
   transition: color 0.3s ease; 
 }
 .nav-inactive:hover
 {
-  color: #e2e5eb;
+  color: #f5d893   ;
   font-weight: bold; 
 }
+
+
+/* e2e5eb */
