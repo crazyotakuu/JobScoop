@@ -89,7 +89,7 @@ function Signup() {
   };
 
   useEffect(() => {
-    console.log("erroe", error)
+    // console.log("erroe", error)
     if (name !== "" && email !== "" && password !== "" && cpassword !== "" && !error.Emailerr && !error.Passworderr) {
       setDisabled(false);
     } else {
