@@ -44,7 +44,7 @@ This section includes both the React component unit tests and the Cypress end-to
 
 ### A. React Component Unit Tests
 
-**Total Unit Test Cases: 43**
+**Total Unit Test Cases: 42**
 
 These tests validate critical component behaviors across user registration, login, password reset, profile handling, and subscription management. Each test ensures UI rendering, input validation, state changes, and interaction with backend mocks.
 
