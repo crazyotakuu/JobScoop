@@ -56,7 +56,7 @@ These tests validate critical component behaviors across user registration, logi
 - Enforces password rules including minimum length and complexity.
 - Displays an error when passwords do not match and clears the password fields.
 - Submits valid data via a mocked API call, shows a success alert, and navigates to the login page.
-- Mocks Axios and React Router navigation using `jest.mock`.
+- Mocks Axios and React Router navigation using jest.mock.
 
 
 #### **Login Component Tests (`Login.test.js`)**
@@ -67,7 +67,7 @@ These tests validate critical component behaviors across user registration, logi
 - On successful login, stores the JWT token in localStorage and redirects the user to the homepage.
 - On failure, displays an error alert and clears input fields.
 - Includes tests to verify navigation to the Signup and Forgot Password pages.
-- Mocks Axios and React Router’s `useNavigate`, as well as localStorage operations.
+- Mocks Axios and React Router’s useNavigate, as well as localStorage operations.
 
 
 #### **Password Reset Component Tests (`PasswordReset.test.js`)**
@@ -78,7 +78,7 @@ These tests validate critical component behaviors across user registration, logi
 - Shows an error alert for invalid or expired codes.
 - Ensures both password fields match and meet complexity rules before enabling reset.
 - On successful reset, shows an alert and redirects to the login page.
-- Uses mock implementations for `axios`, `navigate`, and routing.
+- Uses mock implementations for axios, navigate, and routing.
 
 #### **Profile Component Tests (`Profile.test.js`)**
 
@@ -86,7 +86,7 @@ These tests validate critical component behaviors across user registration, logi
 - Fetches and displays a list of user subscriptions on mount.
 - Allows editing of user details (like name) and handles form submission.
 - Includes tests for logout behavior and profile-specific navigation.
-- Mocks the `AuthContext`, localStorage, and navigation hooks to simulate authentication state and transitions.
+- Mocks the AuthContext, localStorage, and navigation hooks to simulate authentication state and transitions.
 
 #### **Subscribe Component Tests (`Subscribe.test.js`)**
 
@@ -104,7 +104,7 @@ These tests validate critical component behaviors across user registration, logi
 - Validates all fields before allowing submission.
 - Calls the correct submission handler with a complete payload of new subscriptions.
 - Ensures fetch mocking and navigation behavior are tested correctly.
-- Includes utility setup for `act`, `fireEvent`, and userEvent simulation to capture real interaction behavior.
+- Includes utility setup for act, fireEvent, and userEvent simulation to capture real interaction behavior.
 
 
 ### B. Cypress End-to-End Tests
