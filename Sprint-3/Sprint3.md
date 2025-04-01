@@ -39,9 +39,9 @@
 - None. All planned issues for this sprint were successfully completed.
 Frontend Unit Tests
 
-## ✅ Frontend Unit Test Cases (Total: 43)
+##  Frontend Unit Test Cases (Total: 43)
 
-### 📝 Signup Component (`signup.test.js`) – 7 Test Cases
+###  Signup Component (`signup.test.js`) – 7 Test Cases
 1. Renders all form fields: name, email, password, confirm password.
 2. Disables signup button until valid input is provided.
 3. Validates correct email format.
@@ -49,8 +49,6 @@ Frontend Unit Tests
 5. Shows error and clears password fields on mismatch.
 6. Displays success alert upon successful signup.
 7. Redirects user to login page after successful signup.
-
----
 
 ###  Login Component (`login.test.js`) – 6 Test Cases
 8. Renders email and password input fields.
@@ -60,7 +58,6 @@ Frontend Unit Tests
 12. Displays error and clears input fields on login failure.
 13. Navigates to Signup and Forgot Password pages on button click.
 
----
 
 ### 📝 Password Reset Component (`PasswordReset.test.js`) – 9 Test Cases
 14. Renders email input step correctly.
@@ -73,8 +70,6 @@ Frontend Unit Tests
 21. Shows error on expired or incorrect token.
 22. Successfully resets password and redirects to login page.
 
----
-
 ### 📝 Profile Component (`Profile.test.js`) – 6 Test Cases
 23. Correctly renders user profile information (name and email).
 24. Fetches subscriptions when the component loads.
@@ -83,17 +78,13 @@ Frontend Unit Tests
 27. Navigates to other pages via profile navigation links.
 28. Includes labels, headings, and proper section structure in UI.
 
----
-
-### 📝 Subscribe Component (`Subscribe.test.js`) – 4 Test Cases
+###  Subscribe Component (`Subscribe.test.js`) – 4 Test Cases
 29. Renders subscription form input fields properly.
 30. Accepts valid input and submits data to backend.
 31. Displays success alert on successful submission.
 32. Displays error alert on API failure or invalid input.
 
----
-
-### 📝 Add Subscriptions Component (`AddSubscriptions.test.js`) – 5 Test Cases
+###  Add Subscriptions Component (`AddSubscriptions.test.js`) – 5 Test Cases
 33. Renders company name, career links, and role input fields.
 34. Dynamically adds new input rows for career links and roles.
 35. Dynamically removes input rows as expected.
