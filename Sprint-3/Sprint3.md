@@ -89,7 +89,7 @@ These tests were written to ensure robust behavior of individual components acro
   
 ### B. Cypress End-to-End Tests
 
-**Total Cypress Test Cases: 43**
+**Total Cypress Test Cases: 34**
 
 These tests comprehensively validate real user workflows across login, signup, password reset, profile, and subscription management functionalities. Each test ensures the interface behaves correctly, validations are enforced, and backend interactions are handled accurately.
 
