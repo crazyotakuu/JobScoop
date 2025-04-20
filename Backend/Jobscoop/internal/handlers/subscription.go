@@ -960,3 +960,71 @@ func FetchSubscriptionFrequenciesHandler(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(stats)
 }
+
+
+// UserCompanySubscription is the shape of each JSON object in the response.
+type UserCompanySubscription struct {
+    User      string    `json:"user"`
+    Company   string    `json:"company"`
+    Date      time.Time `json:"date"`
+    RoleNames []string  `json:"roleNames"`
+}
+
+func FetchAllUserSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
+    const query = `
+    SELECT
+      u.name            AS user_name,
+      c.name            AS company_name,
+      s.interest_time   AS date,
+      array_agg(r.name) AS role_names
+    FROM subscriptions s
+    JOIN users    u ON s.user_id    = u.id
+    JOIN companies c ON s.company_id = c.id
+    CROSS JOIN LATERAL unnest(s.role_ids) AS rid(roleid)
+    JOIN roles    r ON r.id         = rid.roleid
+    GROUP BY u.name, c.name, s.interest_time
+    ORDER BY u.name, s.interest_time DESC;
+    `
+
+    rows, err := db.DB.Query(query)
+    if err != nil {
+        http.Error(
+            w,
+            fmt.Sprintf(`{"message":"Error querying subscriptions: %v"}`, err),
+            http.StatusInternalServerError,
+        )
+        return
+    }
+    defer rows.Close()
+
+    var out []UserCompanySubscription
+    for rows.Next() {
+        var rec UserCompanySubscription
+        if err := rows.Scan(
+            &rec.User,
+            &rec.Company,
+            &rec.Date,
+            pq.Array(&rec.RoleNames),
+        ); err != nil {
+            http.Error(
+                w,
+                fmt.Sprintf(`{"message":"Error scanning row: %v"}`, err),
+                http.StatusInternalServerError,
+            )
+            return
+        }
+        out = append(out, rec)
+    }
+    if err := rows.Err(); err != nil {
+        http.Error(
+            w,
+            fmt.Sprintf(`{"message":"Error iterating rows: %v"}`, err),
+            http.StatusInternalServerError,
+        )
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(out)
+}
