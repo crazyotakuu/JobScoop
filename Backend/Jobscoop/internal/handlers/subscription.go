@@ -320,8 +320,7 @@ func FetchUserSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 			CompanyName: companyName,
 			CareerLinks: careerLinks,
 			RoleNames:   roleNames,
-			Active: active,
-
+			Active:      active,
 		}
 		subscriptions = append(subscriptions, subResp)
 	}
@@ -376,7 +375,7 @@ type UpdateSubscriptionsRequest struct {
 		CompanyName string   `json:"companyName"`
 		CareerLinks []string `json:"careerLinks,omitempty"`
 		RoleNames   []string `json:"roleNames,omitempty"`
-		Active    *bool    `json:"active,omitempty"`
+		Active      *bool    `json:"active,omitempty"`
 	} `json:"subscriptions"`
 }
 
@@ -486,20 +485,20 @@ type UpdateSubscriptionsRequest struct {
 // 		now := time.Now().UTC()
 // 		if updateCareerLinks && updateRoleNames {
 // 			_, err = db.DB.Exec(`
-// 				UPDATE subscriptions 
-// 				SET career_site_ids=$1, role_ids=$2, interest_time=$3 
+// 				UPDATE subscriptions
+// 				SET career_site_ids=$1, role_ids=$2, interest_time=$3
 // 				WHERE user_id=$4 AND company_id=$5`,
 // 				pq.Array(newCareerSiteIDs64), pq.Array(newRoleIDs64), now, userID, companyID)
 // 		} else if updateCareerLinks {
 // 			_, err = db.DB.Exec(`
-// 				UPDATE subscriptions 
-// 				SET career_site_ids=$1, interest_time=$2 
+// 				UPDATE subscriptions
+// 				SET career_site_ids=$1, interest_time=$2
 // 				WHERE user_id=$3 AND company_id=$4`,
 // 				pq.Array(newCareerSiteIDs64), now, userID, companyID)
 // 		} else if updateRoleNames {
 // 			_, err = db.DB.Exec(`
-// 				UPDATE subscriptions 
-// 				SET role_ids=$1, interest_time=$2 
+// 				UPDATE subscriptions
+// 				SET role_ids=$1, interest_time=$2
 // 				WHERE user_id=$3 AND company_id=$4`,
 // 				pq.Array(newRoleIDs64), now, userID, companyID)
 // 		}
@@ -518,7 +517,6 @@ type UpdateSubscriptionsRequest struct {
 // 		"status":  "success",
 // 	})
 // }
-
 
 // UpdateSubscriptionsHandler updates subscription records based on the provided payload.
 func UpdateSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -858,4 +856,107 @@ func FetchAllSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+// SubscriptionStat is the shape of each item we’ll return.
+type SubscriptionStat struct {
+	Company   string  `json:"company"`
+	Role      string  `json:"role"`
+	Frequency float64 `json:"frequency"`
+}
+
+func FetchSubscriptionFrequenciesHandler(w http.ResponseWriter, r *http.Request) {
+	// 1. Fetch all distinct company IDs that appear in subscriptions
+	cidRows, err := db.DB.Query(`SELECT DISTINCT company_id FROM subscriptions`)
+	if err != nil {
+		http.Error(w, `{"message":"Error fetching company IDs"}`, http.StatusInternalServerError)
+		return
+	}
+	defer cidRows.Close()
+
+	var companyIDs []int
+	for cidRows.Next() {
+		var cid int
+		if err := cidRows.Scan(&cid); err != nil {
+			http.Error(w, `{"message":"Error scanning company ID"}`, http.StatusInternalServerError)
+			return
+		}
+		companyIDs = append(companyIDs, cid)
+	}
+	if err := cidRows.Err(); err != nil {
+		http.Error(w, `{"message":"Error iterating company IDs"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// 2. For each company, compute per-role counts (via unnest) and total subscriptions
+	var stats []SubscriptionStat
+	for _, companyID := range companyIDs {
+		// 2a. Lookup company name
+		var companyName string
+		if err := db.DB.
+			QueryRow(`SELECT name FROM companies WHERE id = $1`, companyID).
+			Scan(&companyName); err != nil {
+			http.Error(w, `{"message":"Error fetching company name"}`, http.StatusInternalServerError)
+			return
+		}
+
+		// 2b. Total subscriptions rows for this company
+		var totalSubs int
+		if err := db.DB.
+			QueryRow(`SELECT COUNT(*) FROM subscriptions WHERE company_id = $1`, companyID).
+			Scan(&totalSubs); err != nil {
+			http.Error(w, `{"message":"Error fetching total subscriptions"}`, http.StatusInternalServerError)
+			return
+		}
+
+		// 2c. Unnest the roleids array and count how many rows reference each role
+		roleRows, err := db.DB.Query(`
+            SELECT
+              unnest(role_ids) AS roleid,
+              COUNT(*)       AS cnt
+            FROM subscriptions
+            WHERE company_id = $1
+            GROUP BY roleid
+        `, companyID)
+		if err != nil {
+			http.Error(w, `{"message":"Error fetching role counts"}`, http.StatusInternalServerError)
+			return
+		}
+
+		// 2d. For each roleid, lookup its name, compute frequency, and append
+		for roleRows.Next() {
+			var roleID, cnt int
+			if err := roleRows.Scan(&roleID, &cnt); err != nil {
+				roleRows.Close()
+				http.Error(w, `{"message":"Error scanning role count"}`, http.StatusInternalServerError)
+				return
+			}
+
+			var roleName string
+			if err := db.DB.
+				QueryRow(`SELECT name FROM roles WHERE id = $1`, roleID).
+				Scan(&roleName); err != nil {
+				roleRows.Close()
+				http.Error(w, `{"message":"Error fetching role name"}`, http.StatusInternalServerError)
+				return
+			}
+
+			freq := float64(cnt) / float64(totalSubs)
+			stats = append(stats, SubscriptionStat{
+				Company:   companyName,
+				Role:      roleName,
+				Frequency: freq,
+			})
+		}
+		roleRows.Close()
+		if err := roleRows.Err(); err != nil {
+			http.Error(w, `{"message":"Error iterating role rows"}`, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// 3. Return the assembled JSON
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(stats)
 }
