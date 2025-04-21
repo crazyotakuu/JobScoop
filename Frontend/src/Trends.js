@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Grid, 
-  Paper, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   Box,
   Card,
@@ -21,6 +22,7 @@ import {
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -56,6 +58,9 @@ const Trends = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // NEW: State for trending roles
+  const [trendingRoles, setTrendingRoles] = useState([]);
+
   // Chart options
   const chartOptions = {
     responsive: true,
@@ -83,7 +88,7 @@ const Trends = () => {
     try {
       // Fetch user subscriptions
       const userSubscriptionsResponse = await axios.get('http://localhost:8080/fetch-all-user-subscriptions');
-      console.log("ds",userSubscriptionsResponse)
+      console.log("ds", userSubscriptionsResponse)
 
       if (!userSubscriptionsResponse.status == 200) {
         throw new Error(`Error fetching user subscriptions: ${userSubscriptionsResponse.statusText}`);
@@ -105,11 +110,58 @@ const Trends = () => {
 
       // Initial filtering based on default date range
       filterDataByDateRange(transformedData, startDate, endDate);
+
+      // NEW: Process trending roles data
+      fetchTrendingRoles(transformedData);
     } catch (err) {
       console.error('Failed to fetch subscription data:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // NEW: Function to fetch trending roles
+  const fetchTrendingRoles = (data) => {
+    try {
+      // Get today's date and 7 days ago for the trending period
+      const currentDate = new Date();
+      const sevenDaysAgo = new Date(currentDate);
+      sevenDaysAgo.setDate(currentDate.getDate() - 7);
+
+      const formattedStartDate = formatDateForInput(sevenDaysAgo);
+      const formattedEndDate = formatDateForInput(currentDate);
+
+      // Filter data for the last 7 days
+      const trendingPeriodData = data.filter(item => {
+        const itemDate = new Date(item.dateSubscribed).getTime();
+        const startTimestamp = new Date(formattedStartDate).getTime();
+        const endTimestamp = new Date(formattedEndDate).getTime();
+
+        return itemDate >= startTimestamp && itemDate <= endTimestamp;
+      });
+
+      // Count role occurrences
+      const roleCount = {};
+      trendingPeriodData.forEach(item => {
+        if (Array.isArray(item.roles)) {
+          item.roles.forEach(role => {
+            roleCount[role] = (roleCount[role] || 0) + 1;
+          });
+        } else {
+          roleCount[item.role] = (roleCount[item.role] || 0) + 1;
+        }
+      });
+
+      // Convert to array and sort by count
+      const sortedRoles = Object.entries(roleCount)
+        .map(([role, count]) => ({ role, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5); // Get only top 5
+
+      setTrendingRoles(sortedRoles);
+    } catch (err) {
+      console.error('Failed to process trending roles:', err);
     }
   };
 
@@ -130,7 +182,7 @@ const Trends = () => {
         company: item.company,
         role: item.role,
         count: item.frequency,
-        percentage: `${((item.frequency / totalSubscriptions) * 100).toFixed(1)}%`
+        percentage: `${((item.frequency) * 100).toFixed(1)}%`
       }));
 
       correlations.sort((a, b) => b.count - a.count);
@@ -298,9 +350,9 @@ const Trends = () => {
             Analyze subscription patterns across companies and roles
           </Typography>
         </div>
-        <Button 
-          variant="outlined" 
-          color="primary" 
+        <Button
+          variant="outlined"
+          color="primary"
           onClick={handleRefreshData}
           startIcon={<span role="img" aria-label="refresh">🔄</span>}
         >
@@ -308,6 +360,67 @@ const Trends = () => {
         </Button>
       </Box>
       <Divider sx={{ mt: 1, mb: 3 }} />
+      {/* MODIFIED: Trending Roles Section with thinner cards, all white, and using #N format */}
+      <Grid item xs={12}>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            borderLeft: '4px solid #FF5722', // Orange highlight border
+            backgroundColor: '#FFF8E1', // Light warm background to make it stand out
+          }}
+          elevation={1}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box component="span" sx={{ mr: 1, fontSize: '1.2rem' }}><TrendingUpIcon></TrendingUpIcon></Box>
+            <Typography variant="h6" component="div">
+              Top 5 Trending Roles
+            </Typography>
+          </Box>
+
+          {trendingRoles.length > 0 ? (
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mt: 1 }}>
+              {trendingRoles.map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'inline-flex',
+                  }}
+                >
+                  <Paper
+                    sx={{
+                      py: 1,
+                      px: 2,
+                      backgroundColor: 'white',
+                      border: '1px solid #e0e0e0',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.primary',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {`#${index + 1} ${item.role}`}
+                    </Typography>
+                  </Paper>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40px' }}>
+              <Typography variant="body2" color="text.secondary">
+                No trending data available for the last 7 days
+              </Typography>
+            </Box>
+          )}
+        </Paper>
+      </Grid>
       <Paper
         sx={{
           p: 3,
@@ -338,9 +451,9 @@ const Trends = () => {
             fullWidth
             size="small"
           />
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleApplyFilter}
             sx={{ minWidth: '80px', height: '40px' }}
           >
@@ -378,11 +491,12 @@ const Trends = () => {
             <Typography variant="h6" gutterBottom component="div">
               Most Popular Companies
             </Typography>
-            <Box sx={{ width: '100%', height: 300, position: 'relative' }}>
+            <Box sx={{ width: '100%', height: 300, position: 'relative' }} data-testid='Company-chart'>
               {companyChartData.labels.length > 0 ? (
-                <Bar 
-                  data={companyChartData} 
-                  options={chartOptions} 
+                <Bar
+                  
+                  data={companyChartData}
+                  options={chartOptions}
                 />
               ) : (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -408,11 +522,11 @@ const Trends = () => {
             <Typography variant="h6" gutterBottom component="div">
               Most Popular Job Roles
             </Typography>
-            <Box sx={{ width: '100%', height: 300, position: 'relative' }}>
+            <Box sx={{ width: '100%', height: 300, position: 'relative' }} data-testid='Role-chart'>
               {roleChartData.labels.length > 0 ? (
-                <Bar 
-                  data={roleChartData} 
-                  options={chartOptions} 
+                <Bar
+                  data={roleChartData}
+                  options={chartOptions}
                 />
               ) : (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -443,7 +557,7 @@ const Trends = () => {
                   <TableRow>
                     <TableCell>Company</TableCell>
                     <TableCell>Role</TableCell>
-                    <TableCell align="right">Number of Subscribers</TableCell>
+                    {/* <TableCell align="right">Number of Subscribers</TableCell> */}
                     <TableCell align="right">Percentage of Users</TableCell>
                   </TableRow>
                 </TableHead>
@@ -458,7 +572,7 @@ const Trends = () => {
                           {row.company}
                         </TableCell>
                         <TableCell>{row.role}</TableCell>
-                        <TableCell align="right">{row.count}</TableCell>
+                        {/* <TableCell align="right">{row.count}</TableCell> */}
                         <TableCell align="right">{row.percentage}</TableCell>
                       </TableRow>
                     ))
