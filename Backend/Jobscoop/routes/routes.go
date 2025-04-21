@@ -52,5 +52,11 @@ func RegisterRoutes() *mux.Router {
 	router.HandleFunc("/subscriptions/jobs", jobs.GetAllJobs).Methods(http.MethodPost)
 	router.HandleFunc("/subscriptions/jobs", jobs.GetAllJobs).Methods(http.MethodOptions)
 
+	router.HandleFunc("/fetch-subscription-frequencies", subscription.FetchSubscriptionFrequenciesHandler).Methods(http.MethodGet)
+	router.HandleFunc("/fetch-subscription-frequencies", subscription.FetchSubscriptionFrequenciesHandler).Methods(http.MethodOptions)
+
+	router.HandleFunc("/fetch-all-user-subscriptions", subscription.FetchAllUserSubscriptionsHandler).Methods(http.MethodGet)
+	router.HandleFunc("/fetch-all-user-subscriptions", subscription.FetchAllUserSubscriptionsHandler).Methods(http.MethodOptions)
+
 	return router
 }
