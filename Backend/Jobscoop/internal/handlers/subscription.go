@@ -863,6 +863,8 @@ type SubscriptionStat struct {
 	Company   string  `json:"company"`
 	Role      string  `json:"role"`
 	Frequency float64 `json:"frequency"`
+	Count     int     `json:"count"`
+    Total     int     `json:"total"`
 }
 
 func FetchSubscriptionFrequenciesHandler(w http.ResponseWriter, r *http.Request) {
@@ -946,6 +948,8 @@ func FetchSubscriptionFrequenciesHandler(w http.ResponseWriter, r *http.Request)
 				Company:   companyName,
 				Role:      roleName,
 				Frequency: freq,
+				Count:     cnt,
+                Total:     totalSubs,
 			})
 		}
 		roleRows.Close()
