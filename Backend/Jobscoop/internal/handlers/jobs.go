@@ -155,6 +155,104 @@ func fetchLinkedInJobs(apiKey, field, geoid, page, sort_by string) ([]map[string
 	return apiResponse, nil
 }
 
+func fetchGoogleJobs(apiKey string, query string) ([]map[string]interface{}, error) {
+	// URL encode the query
+	encodedQuery := url.QueryEscape(query)
+
+	// Construct the URL with query parameters
+	apiURL := fmt.Sprintf("https://api.scrapingdog.com/google_jobs?api_key=%s&query=%s", apiKey, encodedQuery)
+
+	// Make the HTTP request
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return nil, fmt.Errorf("error making request to Google Jobs API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %w", err)
+	}
+
+	// Parse the JSON response
+	var apiResponse struct {
+		JobsResults []map[string]interface{} `json:"jobs_results"`
+	}
+
+	err = json.Unmarshal(body, &apiResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing JSON response: %w", err)
+	}
+
+	// Process and standardize the job data to match our expected format
+	var processedJobs []map[string]interface{}
+	for _, job := range apiResponse.JobsResults {
+		// Create a new job object with standardized fields
+		processedJob := map[string]interface{}{
+			"company_name": job["company_name"],
+			"title":        job["title"],
+			"location":     job["location"],
+			"description":  job["description"],
+			"url":          job["url"],
+			"source":       "Google Jobs",
+		}
+
+		// Add apply links if available
+		if applyLinks, ok := job["apply_links"].([]interface{}); ok {
+			processedJob["apply_links"] = applyLinks
+		}
+
+		// Add extensions if available
+		if extensions, ok := job["extensions"].([]interface{}); ok {
+			processedJob["extensions"] = extensions
+		}
+
+		processedJobs = append(processedJobs, processedJob)
+	}
+
+	return processedJobs, nil
+}
+
+// Define the Job and Metadata types needed for the Indeed API response
+type Job struct {
+	Title          string   `json:"title"`
+	CompanyName    string   `json:"company_name"`
+	Location       string   `json:"location"`
+	Description    string   `json:"description"`
+	URL            string   `json:"url"`
+	ApplyLink      string   `json:"apply_link,omitempty"`
+	Salary         string   `json:"salary,omitempty"`
+	JobType        string   `json:"job_type,omitempty"`
+	DatePosted     string   `json:"date_posted,omitempty"`
+	Skills         []string `json:"skills,omitempty"`
+	RequiredExp    string   `json:"required_exp,omitempty"`
+	RequiredDegree string   `json:"required_degree,omitempty"`
+	SourceType     string   `json:"source_type"`
+}
+
+type Metadata struct {
+	TotalJobs   int    `json:"total_jobs"`
+	JobsPerPage int    `json:"jobs_per_page"`
+	CurrentPage int    `json:"current_page"`
+	TotalPages  int    `json:"total_pages"`
+	Status      string `json:"status"`
+}
+
+// Generate an Indeed URL with the given job role and company
+func generateIndeedURL(jobRole, company string) string {
+	baseURL := "https://www.indeed.com/jobs"
+
+	// Construct query parameters
+	location := "United States"
+	queryParams := url.Values{}
+	queryParams.Set("q", fmt.Sprintf("%s AND %s", jobRole, company))
+	queryParams.Set("l", location)
+
+	// Encode and return the full URL
+	return fmt.Sprintf("%s?%s", baseURL, queryParams.Encode())
+}
+
 // Placeholder for fetchIndeedJobs function
 func fetchIndeedJobs(apiKey string, company, jobRole string) ([]map[string]interface{}, error) {
 	// Generate Indeed URL for the search
@@ -213,6 +311,48 @@ func fetchIndeedJobs(apiKey string, company, jobRole string) ([]map[string]inter
 
 	// Convert Jobs to map[string]interface{} for consistency with other job sources
 	return convertJobsToMaps(jobs), nil
+}
+
+func convertJobsToMaps(jobs []Job) []map[string]interface{} {
+	var result []map[string]interface{}
+
+	for _, job := range jobs {
+		jobMap := map[string]interface{}{
+			"title":        job.Title,
+			"company_name": job.CompanyName,
+			"location":     job.Location,
+			"description":  job.Description,
+			"url":          job.URL,
+			"source":       "Indeed",
+		}
+
+		// Add optional fields if they exist
+		if job.ApplyLink != "" {
+			jobMap["apply_link"] = job.ApplyLink
+		}
+		if job.Salary != "" {
+			jobMap["salary"] = job.Salary
+		}
+		if job.JobType != "" {
+			jobMap["job_type"] = job.JobType
+		}
+		if job.DatePosted != "" {
+			jobMap["date_posted"] = job.DatePosted
+		}
+		if len(job.Skills) > 0 {
+			jobMap["skills"] = job.Skills
+		}
+		if job.RequiredExp != "" {
+			jobMap["required_exp"] = job.RequiredExp
+		}
+		if job.RequiredDegree != "" {
+			jobMap["required_degree"] = job.RequiredDegree
+		}
+
+		result = append(result, jobMap)
+	}
+
+	return result
 }
 
 func fetchJobs(company string, jobRole string, w http.ResponseWriter) ([]map[string]interface{}, error) {
@@ -326,72 +466,4 @@ func isCommonWord(word string) bool {
 	}
 
 	return commonWords[word]
-}
-
-func convertJobsToMaps(jobs []Job) []map[string]interface{} {
-	var result []map[string]interface{}
-
-	for _, job := range jobs {
-		jobMap := map[string]interface{}{
-			"title":        job.Title,
-			"company_name": job.CompanyName,
-			"location":     job.Location,
-			"description":  job.Description,
-			"url":          job.URL,
-			"source":       "Indeed",
-		}
-
-		// Add optional fields if they exist
-		if job.ApplyLink != "" {
-			jobMap["apply_link"] = job.ApplyLink
-		}
-		if job.Salary != "" {
-			jobMap["salary"] = job.Salary
-		}
-		if job.JobType != "" {
-			jobMap["job_type"] = job.JobType
-		}
-		if job.DatePosted != "" {
-			jobMap["date_posted"] = job.DatePosted
-		}
-		if len(job.Skills) > 0 {
-			jobMap["skills"] = job.Skills
-		}
-		if job.RequiredExp != "" {
-			jobMap["required_exp"] = job.RequiredExp
-		}
-		if job.RequiredDegree != "" {
-			jobMap["required_degree"] = job.RequiredDegree
-		}
-
-		result = append(result, jobMap)
-	}
-
-	return result
-}
-
-
-// Define the Job and Metadata types needed for the Indeed API response
-type Job struct {
-	Title          string   `json:"title"`
-	CompanyName    string   `json:"company_name"`
-	Location       string   `json:"location"`
-	Description    string   `json:"description"`
-	URL            string   `json:"url"`
-	ApplyLink      string   `json:"apply_link,omitempty"`
-	Salary         string   `json:"salary,omitempty"`
-	JobType        string   `json:"job_type,omitempty"`
-	DatePosted     string   `json:"date_posted,omitempty"`
-	Skills         []string `json:"skills,omitempty"`
-	RequiredExp    string   `json:"required_exp,omitempty"`
-	RequiredDegree string   `json:"required_degree,omitempty"`
-	SourceType     string   `json:"source_type"`
-}
-
-type Metadata struct {
-	TotalJobs   int    `json:"total_jobs"`
-	JobsPerPage int    `json:"jobs_per_page"`
-	CurrentPage int    `json:"current_page"`
-	TotalPages  int    `json:"total_pages"`
-	Status      string `json:"status"`
 }
