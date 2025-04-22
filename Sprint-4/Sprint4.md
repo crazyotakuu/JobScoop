@@ -41,36 +41,50 @@ This section includes both the React component unit tests and the Cypress end-to
 
 These tests comprehensively validate the data fetching, rendering, interaction, filtering, and error handling workflows of the Trends dashboard. Each test ensures the component responds correctly to user actions, displays dynamic content appropriately, and manages various UI states (loading, error, data-driven rendering).
 
-#### **Trends Component Tests (`Trends.test.js`)**
+#### **A. Trends Component Tests (`Trends.test.js`)**
+
 1. **Displays loading state initially**  
    - Renders a loading message before API data is available.
+
 2. **Fetches data on mount**  
    - Calls mocked API endpoints to fetch subscription and correlation data when the component mounts.
+
 3. **Renders dashboard title after data load**  
-   - Verifies the presence of "Subscription Trends Dashboard" once the data is loaded.
+   - Verifies the presence of “Subscription Trends Dashboard” once the data is loaded.
+
 4. **Displays company chart**  
    - Renders a mocked bar chart for most popular companies.
+
 5. **Displays role chart**  
    - Renders a mocked bar chart for most popular job roles.
+
 6. **Shows correlation table**  
-   - Displays a company-role frequency table based on mocked backend response.
+   - Displays a company‑role frequency table based on mocked backend response.
+
 7. **Supports manual date range filtering**  
-   - Allows users to select a custom "From" and "To" date range and apply filters.
+   - Allows users to select a custom “From” and “To” date range and apply filters.
+
 8. **Provides quick filter buttons**  
-   - Offers predefined filters for "Last 7 days", "Last 30 days", "This month", and "Last month", and applies them correctly.
+   - Offers predefined filters for “Last 7 days”, “Last 30 days”, “This month”, and “Last month”, and applies them correctly.
+
 9. **Handles refresh button logic**  
-   - Clicking "Refresh Data" re-fetches data and updates the dashboard with the latest values.
+   - Clicking “Refresh Data” re-fetches data and updates the dashboard with the latest values.
+
 10. **Displays error state on API failure**  
     - Shows a user-friendly error message with a retry button when initial API fetch fails.
+
 11. **Supports retry after failure**  
-    - Re-fetches and restores the dashboard when "Retry" is clicked after an error.
+    - Re‑fetches and restores the dashboard when “Retry” is clicked after an error.
+
 12. **Renders dashboard statistics**  
     - Shows metrics like total subscriptions, unique companies, and unique job roles.
-13. **Handles empty filter results gracefully**  
-    - Shows a "No data available for the selected date range" message when filtered data is empty.
 
-  
-### B. Cypress End-to-End Tests
+13. **Handles empty filter results gracefully**  
+    - Shows a “No data available for the selected date range” message when filtered data is empty.
+
+---
+
+#### **B. Cypress End-to-End Tests**
 
 **Total Cypress Test Cases: 10**
 
@@ -92,11 +106,18 @@ These tests comprehensively validate the data fetching, rendering, interaction, 
 6. **should handle quick filter buttons**  
    - Clicks “Last 7 days”, “Last 30 days”, “This month”, and “Last month” and checks that the charts & stats update.
 
-7. **should refresh data when clicking the refresh button**  
+7. **should support manual date range filtering**  
+   - Enters a custom “From”/“To” date range, applies it, and verifies the data updates accordingly.
+
+8. **should refresh data when clicking the refresh button**  
    - Clicks “Refresh Data” and ensures new API calls fire and the dashboard content updates.
 
-8. **should handle error states gracefully**  
+9. **should handle error states gracefully**  
    - Mocks a failed API response, checks that an error message appears, and a “Retry” button is shown.
+
+10. **should handle empty filter results gracefully**  
+    - Applies a date range with no data and verifies the “No data available for the selected date range” message.
+
 
 
 ## Backend Unit Tests
