@@ -14,14 +14,20 @@
 2. Implement **Fetch All User Subscriptions** API (Backend – SP4)  
 3. Implement **Fetch Role Frequencies** API (Backend – SP4)  
 4. Write unit tests for **Fetch All User Subscriptions** API (Backend – SP4)  
-5. Write unit tests for **Fetch Role Frequencies** API (Backend – SP4)  
+5. Write unit tests for **Fetch Role Frequencies** API (Backend – SP4)
+6. Implement **Trends page for User Analytics** (Frontend - SP4)
+7. Implement **Charts, Trends, Corelation table in Trends page** (Frontend - SP4)
 
 ## Completed Issues
 1. **Fetch All Jobs from Indeed and Google Jobs** API implemented.  
 2. **Fetch All User Subscriptions** API implemented.  
 3. **Fetch Role Frequencies** API implemented.  
 4. Unit tests for **Fetch All User Subscriptions** API written.  
-5. Unit tests for **Fetch Role Frequencies** API written.  
+5. Unit tests for **Fetch Role Frequencies** API written.
+6. **Trends page for User Analytics** implemented
+7. **Charts, Trends, Corelation table in Trends page** implemented
+8. Unit tests for **Trends UI page** written.
+9. Cypress tests for **Trends UI page** written.
 
 ## Incomplete Issues
 - None. All planned issues for this sprint were successfully completed.
