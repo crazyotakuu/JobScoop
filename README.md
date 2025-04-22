@@ -13,7 +13,7 @@ JobScoop is an one-click job fetching application designed to streamline your jo
 - Venkata Satya Dinesh Chandra Gupta Kolipakula Dhatri (Front-End)
 ---
 
-## 🗂️ Table of Contents  
+## Table of Contents  
 1. [Key Features](#key-features)  
 2. [Tech Stack](#tech-stack)  
 3. [Project Structure](#project-structure)  
@@ -31,7 +31,7 @@ JobScoop is an one-click job fetching application designed to streamline your jo
 
 ---
 
-## ✨ Key Features  
+## Key Features  
 - **Secure Authentication**  
   - Signup, login, and password‑reset flows  
   - Protected routes via React Context  
@@ -61,7 +61,6 @@ JobScoop is an one-click job fetching application designed to streamline your jo
   - End‑to‑end tests with Cypress  
 
 ---
-
 ## 🛠️ Tech Stack  
 - **Framework**: React.js (v18)  
 - **Routing**: React Router v6  
@@ -73,67 +72,10 @@ JobScoop is an one-click job fetching application designed to streamline your jo
   - **E2E**: Cypress  
 
 ---
-
----
-
-## 🔧 Getting Started
+## Getting Started
 
 ### Prerequisites  
 - Node.js ≥ v14  
 - npm ≥ v6  
 
 ### Installation  
-git clone https://github.com/your-username/jobscoop.git
-cd jobscoop
-npm install
-
-Running Locally:
-npm start
-Open http://localhost:3000 in your browser.
-✅ Testing
-Unit Tests
-
-npm test
-
-End‑to‑End Tests
-
-Open the Cypress runner:
-
-npm run cypress:open
-
-Run headless:
-
-npm run cypress:run
-
-📡 API Endpoints
-Endpoint	Method	Description
-POST /auth/signup	POST	Register a new user
-POST /auth/login	POST	Authenticate and receive JWT
-POST /auth/reset	POST	Request password reset
-GET /user/profile	GET	Fetch current user’s profile
-PUT /user/profile	PUT	Update profile information
-GET /subscriptions	GET	List your job‑alert subscriptions
-POST /subscriptions	POST	Add a new subscription
-DELETE /subscriptions/:id	DELETE	Remove a subscription by ID
-GET /trends	GET	Retrieve trends data for charts/tables
-💡 Future Enhancements
-
-    Backend Integration: Connect to a real API & database (Node.js/Express, Mongo/PostgreSQL)
-
-    Dark Mode: Theme toggle with CSS variables
-
-    Push Notifications: Remind users of new trends & renewal dates
-
-    Export Data: Download charts & tables as CSV/PDF
-
-    Internationalization: Multi‑language support
-
-🤝 Contributing
-
-    Fork this repo
-
-    Create a branch (git checkout -b feat/YourFeature)
-
-    Commit your changes (git commit -m "Add YourFeature")
-
-    Push and open a PR
