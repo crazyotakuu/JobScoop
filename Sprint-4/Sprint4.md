@@ -39,9 +39,41 @@ This section includes both the React component unit tests and the Cypress end-to
 
 **Total Unit Test Cases: 13**
 
-These tests validate critical component behaviors across user registration, login, password reset, profile handling, and subscription management. Each test ensures UI rendering, input validation, state changes, and interaction with backend mocks.
+These tests comprehensively validate the data fetching, rendering, interaction, filtering, and error handling workflows of the Trends dashboard. Each test ensures the component responds correctly to user actions, displays dynamic content appropriately, and manages various UI states (loading, error, data-driven rendering).
 
+#### **Trends Component Tests (`Trends.test.js`)**
+## 🧪 Unit Test Coverage
 
+### ✅ Trends Dashboard Test Suite
+
+This test suite verifies the functionality, data loading, and user interactions within the `Trends` component using Jest and React Testing Library.
+
+- **Displays loading state initially**  
+  Renders a loading message before API data is available.
+- **Fetches data on mount**  
+  Calls mocked API endpoints to fetch subscription and correlation data when the component mounts.
+- **Renders dashboard title after data load**  
+  Verifies the presence of "Subscription Trends Dashboard" once the data is loaded.
+- **Displays company and role charts**  
+  Renders bar charts (mocked) for most popular companies and roles after data is processed.
+- **Shows correlation table**  
+  Displays a company-role frequency table populated with mocked data.
+- **Supports manual date range filtering**  
+  Allows users to enter a custom date range using input fields and apply filters.
+- **Provides quick filter buttons**  
+  Includes filters for "Last 7 days", "Last 30 days", "This month", and "Last month" to quickly update the data.
+- **Handles refresh button logic**  
+  Clicking "Refresh Data" triggers new API calls and updates the dashboard content.
+- **Displays error state on API failure**  
+  Shows a user-friendly error message and "Retry" button when data fetching fails.
+- **Supports retry logic**  
+  Clicking the retry button re-fetches data and restores the dashboard after an error.
+- **Renders dashboard statistics**  
+  Displays total subscriptions, unique companies, and unique job roles after data is loaded.
+- **Handles empty filter results gracefully**  
+  Shows a "No data available for the selected date range" message when the filtered dataset is empty.
+
+  
 ### B. Cypress End-to-End Tests
 
 **Total Cypress Test Cases: 10**
