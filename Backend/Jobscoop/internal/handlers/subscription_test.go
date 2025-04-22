@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -410,5 +411,118 @@ func TestFetchAllSubscriptionsHandler(t *testing.T) {
 	// Ensure all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("unmet expectations: %v", err)
+	}
+}
+
+func TestFetchSubscriptionFrequenciesHandler(t *testing.T) {
+	// 1. Set up mock DB and replace global db.DB
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("error initializing mock db: %v", err)
+	}
+	defer mockDB.Close()
+	db.DB = mockDB
+
+	// 2. Mock: DISTINCT company_id
+	mock.ExpectQuery(`SELECT DISTINCT company_id FROM subscriptions`).
+		WillReturnRows(sqlmock.NewRows([]string{"company_id"}).AddRow(100))
+
+	// 3. Mock: company name lookup
+	mock.ExpectQuery(`SELECT name FROM companies WHERE id = \$1`).
+		WithArgs(100).
+		WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("Adobe"))
+
+	// 4. Mock: total subscriptions count
+	mock.ExpectQuery(`SELECT COUNT\(\*\) FROM subscriptions WHERE company_id = \$1`).
+		WithArgs(100).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(10))
+
+	// 5. Mock: per-role counts via unnest
+	mock.ExpectQuery(`unnest\(role_ids\)`).
+		WithArgs(100).
+		WillReturnRows(sqlmock.NewRows([]string{"roleid", "cnt"}).
+			AddRow(5, 7).
+			AddRow(6, 3),
+		)
+
+	// 6. Mock: role name lookups
+	mock.ExpectQuery(`SELECT name FROM roles WHERE id = \$1`).
+		WithArgs(5).
+		WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("Engineer"))
+	mock.ExpectQuery(`SELECT name FROM roles WHERE id = \$1`).
+		WithArgs(6).
+		WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("Analyst"))
+
+	// 7. Perform the request
+	req := httptest.NewRequest(http.MethodGet, "/subscriptions/frequencies", nil)
+	w := httptest.NewRecorder()
+	FetchSubscriptionFrequenciesHandler(w, req)
+
+	// 8. Verify HTTP response
+	res := w.Result()
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", res.StatusCode)
+	}
+
+	// 9. Decode JSON
+	var stats []SubscriptionStat
+	if err := json.NewDecoder(res.Body).Decode(&stats); err != nil {
+		t.Fatalf("error decoding response: %v", err)
+	}
+
+	// 10. Assertions
+	if len(stats) != 2 {
+		t.Fatalf("expected 2 subscription stats, got %d", len(stats))
+	}
+
+	// Because SQL GROUP BY has no guaranteed ordering, find by role name
+	var gotEng, gotAnl *SubscriptionStat
+	for i := range stats {
+		switch stats[i].Role {
+		case "Engineer":
+			gotEng = &stats[i]
+		case "Analyst":
+			gotAnl = &stats[i]
+		}
+	}
+
+	if gotEng == nil {
+		t.Error("missing Engineer record")
+	} else {
+		if gotEng.Company != "Adobe" {
+			t.Errorf("Engineer: expected company Adobe, got %s", gotEng.Company)
+		}
+		if gotEng.Count != 7 {
+			t.Errorf("Engineer: expected count 7, got %d", gotEng.Count)
+		}
+		if gotEng.Total != 10 {
+			t.Errorf("Engineer: expected total 10, got %d", gotEng.Total)
+		}
+		if math.Abs(gotEng.Frequency-0.7) > 1e-6 {
+			t.Errorf("Engineer: expected frequency 0.7, got %f", gotEng.Frequency)
+		}
+	}
+
+	if gotAnl == nil {
+		t.Error("missing Analyst record")
+	} else {
+		if gotAnl.Company != "Adobe" {
+			t.Errorf("Analyst: expected company Adobe, got %s", gotAnl.Company)
+		}
+		if gotAnl.Count != 3 {
+			t.Errorf("Analyst: expected count 3, got %d", gotAnl.Count)
+		}
+		if gotAnl.Total != 10 {
+			t.Errorf("Analyst: expected total 10, got %d", gotAnl.Total)
+		}
+		if math.Abs(gotAnl.Frequency-0.3) > 1e-6 {
+			t.Errorf("Analyst: expected frequency 0.3, got %f", gotAnl.Frequency)
+		}
+	}
+
+	// 11. Ensure all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unmet sqlmock expectations: %v", err)
 	}
 }
