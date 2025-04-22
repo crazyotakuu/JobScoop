@@ -11,6 +11,7 @@ jest.mock('axios');
 // Mock CSS imports
 jest.mock('./subscribe/Subscribe.css', () => ({}));
 
+
 // Mock the useNavigate hook
 const mockedNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -88,7 +89,7 @@ describe('Subscribe Component', () => {
     // Wait for the alert to appear - it's not present initially
     await waitFor(() => {
       const alertElement = screen.getByRole('alert', { hidden: true });
-      expect(alertElement.textContent).toContain('Error to load the page... Please try again');
+      expect(alertElement.textContent).toContain('Failed to fetch data... Please try again');
     });
   });
 

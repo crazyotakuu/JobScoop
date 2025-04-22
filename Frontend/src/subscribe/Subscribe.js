@@ -89,7 +89,7 @@ function Subscribe() {
             temp[index]['careerLinks'] = []
             let opt = []
             temp.forEach((item, index) => {
-                if (((Object.keys(options.companies)).length > 0 && (Object.keys(options.companies)).includes(item.companyName))) {
+                if (((Object.keys(options.companies || {})).length > 0 && (Object.keys(options.companies || {})).includes(item.companyName))) {
                     opt.push(options.companies[item.companyName])
                 }
                 else {
@@ -117,7 +117,7 @@ function Subscribe() {
             listcheck = roleoptions
         }
         else {
-            listcheck = urloptions[index]
+            listcheck = urloptions[index] || []
         }
         if (listcheck?.includes(selectedValue)) {
             if (temp[index][name]?.includes(selectedValue)) {
@@ -273,10 +273,12 @@ function Subscribe() {
             const response = await axios.post('http://localhost:8080/fetch-user-subscriptions', payload);
 
             if (response.status == 200) {
-                // Add active status to each subscription if it doesn't exist
-                const subscriptionsWithActive = response.data.subscriptions.map(sub => ({
+                // Initialize with an empty array if subscriptions is null or undefined
+                const subscriptionsWithActive = (response.data.subscriptions || []).map(sub => ({
                     ...sub,
-                    // active: sub.hasOwnProperty('active') ? sub.active : true
+                    active: sub.active !== undefined ? sub.active : true,
+                    roleNames: sub.roleNames || [],
+                    careerLinks: sub.careerLinks || []
                 }));
 
                 setloading(false);
@@ -291,6 +293,10 @@ function Subscribe() {
         } catch (error) {
             console.error('Error fetching data:', error);
             setloading(false);
+            // Initialize with empty arrays on error
+            setsubscribelist([]);
+            setsubscribelistbkp([]);
+            seterrorlist([]);
             setsnackAlert({
                 open: true,
                 severity: 'error',
@@ -306,13 +312,20 @@ function Subscribe() {
             const response = await axios.get('http://localhost:8080/fetch-all-subscriptions');
 
             if (response.status == 200) {
-                setoptions(response.data)
-                setroleoptions(response.data.roles)
-                setcomapnyoptions(Object.keys(response.data.companies))
-                seturloptions([])
+                // Ensure options has the expected structure
+                const optionsData = response.data || { companies: {}, roles: [] };
+                setoptions(optionsData);
+                setroleoptions(optionsData.roles || []);
+                setcomapnyoptions(Object.keys(optionsData.companies || {}));
+                seturloptions([]);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
+            // Initialize with empty data on error
+            setoptions({ companies: {}, roles: [] });
+            setroleoptions([]);
+            setcomapnyoptions([]);
+            seturloptions([]);
             setsnackAlert({
                 open: true,
                 severity: 'error',
@@ -333,12 +346,15 @@ function Subscribe() {
         setSearchTerm(event.target.value);
     };
 
+    // Safe filtering to handle null or undefined values
     const filteredSubscribeList = subscribelist.filter(sub => {
+        if (!sub) return false;
+        
         const searchLower = searchTerm.toLowerCase();
         return (
             (sub.companyName && sub.companyName.toLowerCase().includes(searchLower)) ||
-            (sub.roleNames && sub.roleNames.some(role => role.toLowerCase().includes(searchLower))) ||
-            (sub.careerLinks && sub.careerLinks.some(link => link.toLowerCase().includes(searchLower)))
+            (Array.isArray(sub.roleNames) && sub.roleNames.some(role => role && role.toLowerCase().includes(searchLower))) ||
+            (Array.isArray(sub.careerLinks) && sub.careerLinks.some(link => link && link.toLowerCase().includes(searchLower)))
         );
     });
 
@@ -431,11 +447,11 @@ function Subscribe() {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {filteredSubscribeList != null && filteredSubscribeList.length > 0 ? (
+                                                {filteredSubscribeList.length > 0 ? (
                                                     filteredSubscribeList.map((data, index) => {
                                                         const originalIndex = subscribelist.findIndex(item =>
-                                                            item.companyName === data.companyName &&
-                                                            JSON.stringify(item.roleNames) === JSON.stringify(data.roleNames)
+                                                            item && data && item.companyName === data.companyName &&
+                                                            JSON.stringify(item.roleNames || []) === JSON.stringify(data.roleNames || [])
                                                         );
 
                                                         return (
@@ -450,7 +466,7 @@ function Subscribe() {
                                                                             list="companyName-options"
                                                                             className={`form-control ${errorlist[originalIndex]?.companyNameerr ? "is-invalid" : ""}`}
                                                                             placeholder="Select or type a company"
-                                                                            value={data.companyName}
+                                                                            value={data.companyName || ''}
                                                                             onClick={(e) => Editenable && clear(e, originalIndex)}
                                                                             onFocus={(e) => Editenable && clear(e, originalIndex)}
                                                                             onChange={(e) => onChange(e, originalIndex)}
@@ -467,7 +483,7 @@ function Subscribe() {
                                                                 {/* Career Links Input */}
                                                                 <TableCell>
                                                                     <div className={`multi-select rounded ${data.roleNameserr ? "border-danger" : "border"}`}>
-                                                                        {data.careerLinks.map((role, tagIndex) => (
+                                                                        {(data.careerLinks || []).map((role, tagIndex) => (
                                                                             <span key={role} className="tag bg-light text-primary rounded-pill px-2 py-1 me-1 mb-1 d-inline-flex align-items-center">
                                                                                 {role}
                                                                                 {Editenable && (
@@ -490,7 +506,7 @@ function Subscribe() {
                                                                         />
                                                                     </div>
                                                                     <datalist id={`carrer-options-${originalIndex}`}>
-                                                                        {(urloptions[originalIndex] != undefined ? urloptions[originalIndex] : []).map((role) => (
+                                                                        {(urloptions[originalIndex] || []).map((role) => (
                                                                             <option key={role} value={role} />
                                                                         ))}
                                                                     </datalist>
@@ -499,7 +515,7 @@ function Subscribe() {
                                                                 {/* Job Roles Multi-Select */}
                                                                 <TableCell>
                                                                     <div className={`multi-select rounded ${data.roleNameserr ? "border-danger" : "border"}`}>
-                                                                        {data.roleNames.map((role, tagIndex) => (
+                                                                        {(data.roleNames || []).map((role, tagIndex) => (
                                                                             <span key={role} className="tag bg-light text-primary rounded-pill px-2 py-1 me-1 mb-1 d-inline-flex align-items-center">
                                                                                 {role}
                                                                                 {Editenable && (
@@ -529,7 +545,7 @@ function Subscribe() {
                                                                 <TableCell align="center">
                                                                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                                         <StyledSwitch
-                                                                            checked={data.active}
+                                                                            checked={data.active || false}
                                                                             onChange={() => handleToggleChange(originalIndex)}
                                                                             disabled={!Editenable}
                                                                         />
