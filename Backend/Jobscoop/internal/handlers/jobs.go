@@ -327,3 +327,45 @@ func isCommonWord(word string) bool {
 
 	return commonWords[word]
 }
+
+func convertJobsToMaps(jobs []Job) []map[string]interface{} {
+	var result []map[string]interface{}
+
+	for _, job := range jobs {
+		jobMap := map[string]interface{}{
+			"title":        job.Title,
+			"company_name": job.CompanyName,
+			"location":     job.Location,
+			"description":  job.Description,
+			"url":          job.URL,
+			"source":       "Indeed",
+		}
+
+		// Add optional fields if they exist
+		if job.ApplyLink != "" {
+			jobMap["apply_link"] = job.ApplyLink
+		}
+		if job.Salary != "" {
+			jobMap["salary"] = job.Salary
+		}
+		if job.JobType != "" {
+			jobMap["job_type"] = job.JobType
+		}
+		if job.DatePosted != "" {
+			jobMap["date_posted"] = job.DatePosted
+		}
+		if len(job.Skills) > 0 {
+			jobMap["skills"] = job.Skills
+		}
+		if job.RequiredExp != "" {
+			jobMap["required_exp"] = job.RequiredExp
+		}
+		if job.RequiredDegree != "" {
+			jobMap["required_degree"] = job.RequiredDegree
+		}
+
+		result = append(result, jobMap)
+	}
+
+	return result
+}
