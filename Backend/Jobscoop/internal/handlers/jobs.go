@@ -17,6 +17,20 @@ var (
 	fetchJobsFunc = fetchJobs
 )
 
+// Generate an Indeed URL with the given job role and company
+func generateIndeedURL(jobRole, company string) string {
+	baseURL := "https://www.indeed.com/jobs"
+
+	// Construct query parameters
+	location := "United States"
+	queryParams := url.Values{}
+	queryParams.Set("q", fmt.Sprintf("%s AND %s", jobRole, company))
+	queryParams.Set("l", location)
+
+	// Encode and return the full URL
+	return fmt.Sprintf("%s?%s", baseURL, queryParams.Encode())
+}
+
 func GetAllJobs(w http.ResponseWriter, r *http.Request) {
 	// Decode request to get email
 	var req GetSubscriptionsRequest
