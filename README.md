@@ -106,3 +106,106 @@ Clone the Jobscoop repositry into your local using the command `git clone https:
 - choose e2e testing and hit run for the testcases
     
   
+
+# Backend Setup & Usage
+
+This section walks you through the detailed steps required to get the JobScoop backend up and running on your local machine.
+
+---
+
+## 1. Prerequisites
+
+Make sure you have the following installed:
+
+- **Go** (latest stable version ≥ 1.18):  
+  https://golang.org/dl/
+
+- **PostgreSQL** (≥ 12.x):  
+  https://www.postgresql.org/download/
+
+- **Postman** (or any REST client) for testing your APIs:  
+  https://www.postman.com/downloads/
+
+---
+
+## 2. Clone & Directory Structure
+
+```bash
+git clone https://github.com/crazyotakuu/JobScoop.git
+cd JobScoop/Backend
+```
+Your `Backend/` folder should contain:
+```
+Backend/
+├── config/           # .env example, other config loaders
+├── internal/         # business logic, handlers
+├── migrations/       # SQL migration scripts
+├── pkg/              # shared packages (DB, models, utils)
+├── routes/           # HTTP route definitions
+├── scripts/          # helper scripts (e.g. seed data)
+└── main.go           # application entrypoint
+```
+## 3. Environment Variables
+
+Create a `.env` file in `Backend/config/` (or at the project root if that’s where your loader expects it).  
+You can start from `.env.example` and fill in your own values:
+```
+# --- Database Connection ---
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=<YourPostgresPassword>
+DB_NAME=jobscoop
+
+# --- HTTP Server ---
+SERVER_PORT=8080
+
+# --- JWT Authentication ---
+JWT_TOKEN=<YourJWTSigningSecret>
+
+# --- Email (Forgot Password) ---
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=<your-email@gmail.com>
+SMTP_PASS=<your-smtp-password>
+
+# --- ScrapingDog API ---
+SCRAPING_DOG_API_KEY=<YourScrapingDogApiKey>
+```
+
+## 4. Database Initialization
+
+1.  **Start PostgreSQL** (ensure it’s running on `DB_HOST:DB_PORT`).
+    
+2.  **Create the database**: Create database in pgadmin4
+
+## 5. Installing Dependencies
+
+Inside the `Backend/` directory:
+```
+go mod tidy      # download & verify all module dependencies
+```
+## 6. Running the Server
+
+With your `.env` in place and database ready, start the backend:
+
+```
+cd Backend/JobScoop
+go run main.go
+```
+You should see output like:
+
+```
+Server running on http://localhost:8080
+
+```
+
+## 7. Testing the APIs
+
+You can now exercise the endpoints with Postman or via the Frontend client.
+
+### Example with Postman
+
+-   **Base URL:** `http://localhost:8080/api`
+
+You’re all set! Enjoy building and testing your JobScoop backend.
