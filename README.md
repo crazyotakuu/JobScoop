@@ -218,7 +218,7 @@ SCRAPING_DOG_API_KEY=<YourScrapingDogApiKey>
 
 1.  **Start PostgreSQL** (ensure it’s running on `DB_HOST:DB_PORT`).
     
-2.  **Create the database**: Create database in pgadmin4
+2.  **Create the database**: Create database (named jobscoop) in pgadmin4
 
 ## 5. Installing Dependencies
 
