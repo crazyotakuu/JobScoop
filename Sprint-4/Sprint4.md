@@ -873,3 +873,184 @@ The JSON payload must include the user's email and the new password:
 -   **500 Internal Server Error:**
     
     -   If there is an error retrieving user data from the database.
+
+
+# Subscription Frequencies API
+
+## Endpoint
+
+-   **URL:** `fetch-subscription-frequencies`
+    
+-   **Method:** `GET`
+    
+-   **Content-Type:** `application/json`
+    
+
+## Request Parameters
+
+This endpoint does not accept any URL parameters or request body.
+
+## Functionality
+
+1.  **Fetch Distinct Companies**  
+    Queries the `subscriptions` table for all distinct `company_id` values.
+    
+2.  **Company Lookup**  
+    For each `company_id`, retrieves the human‑readable company name from the `companies` table.
+    
+3.  **Total Subscriptions Count**  
+    Counts how many subscription rows exist for that company (`COUNT(*)`).
+    
+4.  **Per‑Role Subscription Count**
+    
+    -   Expands each subscription’s `role_ids` array via `unnest(role_ids)`.
+        
+    -   Groups by each `roleid` to compute the number of subscriptions per role.
+        
+5.  **Role Lookup**  
+    Maps each `roleid` to its name in the `roles` table.
+    
+6.  **Frequency Calculation**  
+    Computes
+    
+    `frequency = (subscriptions for this role) / (total subscriptions for the company)` 
+    
+7.  **Response Assembly**  
+    Builds a JSON array where each element contains:
+    
+    -   `company` (string): company name
+        
+    -   `role` (string): role name
+        
+    -   `count` (integer): number of subscriptions for that role
+        
+    -   `total` (integer): total subscription rows for the company
+        
+    -   `frequency` (float): `count / total`
+        
+
+## Success Response
+
+-   **Status:** `200 OK`
+    
+-   **Body Example:**
+```
+[
+  {
+    "company": "Apple",
+    "role": "Software Engineer",
+    "count": 12,
+    "total": 50,
+    "frequency": 0.24
+  },
+  {
+    "company": "Apple",
+    "role": "Data Scientist",
+    "count": 8,
+    "total": 50,
+    "frequency": 0.16
+  },
+  {
+    "company": "Google",
+    "role": "Backend Engineer",
+    "count": 15,
+    "total": 30,
+    "frequency": 0.50
+  }
+]
+
+```
+
+# Fetch All User Subscriptions API
+
+## Endpoint
+
+-   **URL:** `fetch-all-user-subscriptions`
+    
+-   **Method:** `GET`
+    
+-   **Content-Type:** `application/json`
+    
+
+## Request
+
+This endpoint does not accept any URL parameters or request body.
+
+## Functionality
+
+1.  **Query Subscriptions**
+    
+    -   Executes a single SQL statement that:
+        
+        -   Joins `subscriptions` (`s`) with `users` (`u`) to retrieve `u.name`.
+            
+        -   Joins with `companies` (`c`) to retrieve `c.name`.
+            
+        -   Unnests the integer array `s.role_ids` via a `CROSS JOIN LATERAL`, producing one row per `(subscription, roleid)`.
+            
+        -   Joins the unnested `roleid` with `roles` (`r`) to retrieve `r.name`.
+            
+        -   Groups the results by user name, company name, and `s.interest_time`, aggregating the role names into an array.
+            
+        -   Orders the output first by user name (ascending) and then by `interest_time` (descending).
+            
+2.  **Row Scanning**
+    
+    -   Iterates over the returned rows, scanning into a `UserCompanySubscription` struct:
+```
+type UserCompanySubscription struct {
+  User      string    `json:"user"`
+  Company   string    `json:"company"`
+  Date      time.Time `json:"date"`
+  RoleNames []string  `json:"roleNames"`
+}
+
+```
+3.  **Error Handling**
+    
+    -   If the initial query fails, returns a **500 Internal Server Error** with the detailed error.
+        
+    -   If scanning a row or iterating rows fails, likewise returns **500** with the error message.
+        
+4.  **Response Construction**
+    
+    -   On success, returns **200 OK** and the full slice of `UserCompanySubscription` structs, serialized as JSON.
+        
+
+## Success Response
+
+-   **Status:** `200 OK`
+    
+-   **Body Example:**
+
+```
+[
+  {
+    "user": "Abhinav",
+    "company": "Google",
+    "date": "2025-04-18T14:30:00Z",
+    "roleNames": [
+      "software engineer",
+      "data engineer"
+    ]
+  },
+  {
+    "user": "Abhinav",
+    "company": "Tesla",
+    "date": "2025-04-19T09:15:00Z",
+    "roleNames": [
+      "AI engineer"
+    ]
+  },
+  {
+    "user": "Uday",
+    "company": "Acme Corp",
+    "date": "2025-04-17T11:00:00Z",
+    "roleNames": [
+      "backend developer",
+      "devops engineer"
+    ]
+  }
+]
+
+```
