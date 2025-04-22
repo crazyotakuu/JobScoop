@@ -183,10 +183,16 @@ const Trends = () => {
         role: item.role,
         count: item.count,
         total:item.total,
-        percentage: `${((item.frequency) * 100).toFixed(1)}%`
+        percentage: `${((item.frequency) * 100).toFixed(1)}%`,
+        percentageN:((item.frequency) * 100).toFixed(1)
       }));
 
-      correlations.sort((a, b) => b.count - a.count);
+      correlations.sort((a, b) => {
+        const countDiff = (b.count || 0) - (a.count || 0);
+        if (countDiff !== 0) return countDiff;
+      
+        return (b.percentageN || 0) - (a.percentageN || 0);
+      });
       correlations.slice(0, 10);
 
       setCorrelationData(correlations);
