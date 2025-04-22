@@ -37,7 +37,7 @@ This section includes both the React component unit tests and the Cypress end-to
 
 ### A. React Component Unit Tests
 
-**Total Unit Test Cases: 13**
+**Total Unit Test Cases: 12**
 
 These tests comprehensively validate the data fetching, rendering, interaction, filtering, and error handling workflows of the Trends dashboard. Each test ensures the component responds correctly to user actions, displays dynamic content appropriately, and manages various UI states (loading, error, data-driven rendering).
 
@@ -69,8 +69,6 @@ These tests comprehensively validate the data fetching, rendering, interaction, 
 
   
 ### B. Cypress End-to-End Tests
-
-## B. Cypress End-to-End Tests
 
 **Total Cypress Test Cases: 10**
 
