@@ -42,12 +42,6 @@ This section includes both the React component unit tests and the Cypress end-to
 These tests comprehensively validate the data fetching, rendering, interaction, filtering, and error handling workflows of the Trends dashboard. Each test ensures the component responds correctly to user actions, displays dynamic content appropriately, and manages various UI states (loading, error, data-driven rendering).
 
 #### **Trends Component Tests (`Trends.test.js`)**
-## 🧪 Unit Test Coverage
-
-### ✅ Trends Dashboard Test Suite
-
-This test suite verifies the functionality, data loading, and user interactions within the `Trends` component using Jest and React Testing Library.
-
 - **Displays loading state initially**  
   Renders a loading message before API data is available.
 - **Fetches data on mount**  
