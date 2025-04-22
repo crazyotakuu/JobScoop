@@ -78,4 +78,16 @@ JobScoop is an one-click job fetching application designed to streamline your jo
 - Node.js ≥ v14  
 - npm ≥ v6  
 
-### Installation  
+### Installation
+
+#### FRONTEND 
+- Navigate to the Frontend directory in the Jobscoop application (cd jobscoop/Frontend)
+- Install dependencies using the command npm install
+- Start the Front end application using the command npm start
+#### FRONTEND TESTING (UNIT TESTCASES)
+- Navigate to the Frontend directory in the Jobscoop application (cd jobscoop/Frontend)
+- To execute tests run npm test command to initiate unit testcases
+  #### FRONTEND TESTING (CYPRESS TESTCASES)
+  - 
+    
+  
