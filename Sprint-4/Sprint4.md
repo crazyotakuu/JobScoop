@@ -33,7 +33,7 @@
 - None. All planned issues for this sprint were successfully completed.
 
 ## Frontend Unit Tests
-This section includes both the React component unit tests and the Cypress end-to-end tests written during Sprint 3.
+This section includes both the React component unit tests and the Cypress end-to-end tests written during Sprint 4.
 
 ### A. React Component Unit Tests
 
