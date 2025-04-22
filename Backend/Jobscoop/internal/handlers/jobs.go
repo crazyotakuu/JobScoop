@@ -369,3 +369,29 @@ func convertJobsToMaps(jobs []Job) []map[string]interface{} {
 
 	return result
 }
+
+
+// Define the Job and Metadata types needed for the Indeed API response
+type Job struct {
+	Title          string   `json:"title"`
+	CompanyName    string   `json:"company_name"`
+	Location       string   `json:"location"`
+	Description    string   `json:"description"`
+	URL            string   `json:"url"`
+	ApplyLink      string   `json:"apply_link,omitempty"`
+	Salary         string   `json:"salary,omitempty"`
+	JobType        string   `json:"job_type,omitempty"`
+	DatePosted     string   `json:"date_posted,omitempty"`
+	Skills         []string `json:"skills,omitempty"`
+	RequiredExp    string   `json:"required_exp,omitempty"`
+	RequiredDegree string   `json:"required_degree,omitempty"`
+	SourceType     string   `json:"source_type"`
+}
+
+type Metadata struct {
+	TotalJobs   int    `json:"total_jobs"`
+	JobsPerPage int    `json:"jobs_per_page"`
+	CurrentPage int    `json:"current_page"`
+	TotalPages  int    `json:"total_pages"`
+	Status      string `json:"status"`
+}
