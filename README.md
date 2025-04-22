@@ -3,30 +3,12 @@
 
 JobScoop is an one-click job fetching application designed to streamline your job search. Users can sign up, log in, and manage their preferred companies, which the application uses to scrape career websites for job postings. With filters like Software Engineer, and New Grad 2025, users can view tailored results, navigate directly to job postings, and stay organized.
 
-
-
 ## Members
 
 - Vijay Abhinav Telukunta (Back-End)
 - Uday Srinivas Medisetty (Back-End)
 - Vishnu Vivek Valeti (Front-End)
 - Venkata Satya Dinesh Chandra Gupta Kolipakula Dhatri (Front-End)
-
-## Table of Contents  
-1. [Key Features](#key-features)  
-2. [Tech Stack](#tech-stack)  
-3. [Project Structure](#project-structure)  
-4. [Getting Started](#getting-started)  
-   - [Prerequisites](#prerequisites)  
-   - [Installation](#installation)  
-   - [Running Locally](#running-locally)  
-5. [Testing](#testing)  
-   - [Unit Tests](#unit-tests)  
-   - [End‑to‑End Tests](#end-to-end-tests)  
-6. [API Endpoints](#api-endpoints)  
-7. [Future Enhancements](#future-enhancements)  
-8. [Contributing](#contributing)  
-9. [License](#license)  
 
 ## Key Features  
 - **Secure Authentication**  
@@ -74,6 +56,8 @@ JobScoop is an one-click job fetching application designed to streamline your jo
   - End‑to‑end tests with Cypress  
 
 ## Tech Stack  
+
+### Frontend  
 - **Framework**: React.js (v18)  
 - **Routing**: React Router v6  
 - **State Management**: Context API  
@@ -83,28 +67,87 @@ JobScoop is an one-click job fetching application designed to streamline your jo
   - **Unit**: Jest + React Testing Library  
   - **E2E**: Cypress  
 
-## Getting Started
+### Backend  
+- **Language**: Go (v1.18+)  
+- **Web Framework**: net/http (standard library)  
+- **Database**: PostgreSQL (v12+)  
+- **API Testing**: Postman (or any REST client)  
+- **Testing**:  
+  - **Unit**: Go’s built‑in `testing` package (`go test`)  
+  - **Integration**: Table‑driven tests against a test database  
 
-### Prerequisites  
-- Node.js ≥ v14  
-- npm ≥ v6  
 
-### Installation
 
-Clone the Jobscoop repositry into your local using the command `git clone https://github.com/crazyotakuu/JobScoop.git`
 
-#### FRONTEND 
-- Navigate to the Frontend directory in the Jobscoop application (`cd jobscoop/Frontend`)
-- Install dependencies using the command `npm install`
-- Start the Front end application using the command `npm start`
-#### FRONTEND TESTING (UNIT TESTCASES)
-- Navigate to the Frontend directory in the Jobscoop application (`cd jobscoop/Frontend`)
-- To execute tests run `npm test` command to initiate unit testcases
-#### FRONTEND TESTING (CYPRESS TESTCASES)
-- Install cypress module using the command `npm install cypress --save-dev`
-- to execute cypress testcases use the command `npx cypress open`
-- choose e2e testing and hit run for the testcases
-    
+
+# Frontend Setup & Usage
+
+This section walks you through the detailed steps required to get the JobScoop frontend up and running on your local machine.
+
+## 1. Prerequisites
+
+Make sure you have the following installed:
+
+- **Node.js** (v14 or later):  
+  https://nodejs.org/en/download/
+- **npm** (v6 or later):  
+  Included with Node.js
+
+## 2. Clone & Directory Structure
+
+```bash
+git clone https://github.com/crazyotakuu/JobScoop.git
+cd JobScoop/Frontend
+```
+Your `Frontend/` folder should contain
+```
+Frontend/
+├── public/             # Static assets (index.html, icons, etc.)
+├── src/                # React source files
+│   ├── components/     # Reusable UI components
+│   ├── context/        # Context providers (Auth, Theme, etc.)
+│   ├── pages/          # Page-level components
+│   ├── hooks/          # Custom React hooks
+│   ├── utils/          # Utility functions
+│   └── index.js        # App entrypoint
+├── cypress/            # End‑to‑end tests
+├── package.json        # Project metadata & scripts
+└── README.md           # This file
+```
+## 3. Installing Dependencies
+From within the `Frontend/` directory, install all required packages:
+```
+`npm install`
+```
+## 4. Running the Application
+
+Start the development server:
+```
+`npm start` 
+```
+The app will be available at `http://localhost:3000`.
+
+## 5. Testing
+
+### 5.1 Unit Tests
+
+Run all Jest + React Testing Library tests:
+
+```
+`npm test` 
+```
+### 5.2 End‑to‑End Tests
+
+Install Cypress (if you haven’t already) and launch the test runner:
+
+```
+
+`npm install cypress --save-dev
+npx cypress open` 
+```
+In the Cypress UI, select **e2e** and run the JobScoop test suite.
+
+You can now develop, test, and iterate on the JobScoop frontend! Enjoy.
   
 
 # Backend Setup & Usage
