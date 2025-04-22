@@ -154,7 +154,6 @@ You can now develop, test, and iterate on the JobScoop frontend! Enjoy.
 
 This section walks you through the detailed steps required to get the JobScoop backend up and running on your local machine.
 
----
 
 ## 1. Prerequisites
 
@@ -169,15 +168,14 @@ Make sure you have the following installed:
 - **Postman** (or any REST client) for testing your APIs:  
   https://www.postman.com/downloads/
 
----
 
 ## 2. Clone & Directory Structure
 
 ```bash
 git clone https://github.com/crazyotakuu/JobScoop.git
-cd JobScoop/Backend
+cd JobScoop/Backend/JobScoop
 ```
-Your `Backend/` folder should contain:
+Your `Backend/JobScoop` folder should contain:
 ```
 Backend/
 ├── config/           # .env example, other config loaders
