@@ -32,6 +32,23 @@
 ## Incomplete Issues
 - None. All planned issues for this sprint were successfully completed.
 
+## Frontend Unit Tests
+This section includes both the React component unit tests and the Cypress end-to-end tests written during Sprint 3.
+
+### A. React Component Unit Tests
+
+**Total Unit Test Cases: 13**
+
+These tests validate critical component behaviors across user registration, login, password reset, profile handling, and subscription management. Each test ensures UI rendering, input validation, state changes, and interaction with backend mocks.
+
+
+### B. Cypress End-to-End Tests
+
+**Total Cypress Test Cases: 10**
+
+These tests comprehensively validate real user workflows across login, signup, password reset, profile, and subscription management functionalities. Each test ensures the interface behaves correctly, validations are enforced, and backend interactions are handled accurately.
+
+
 ## Backend Unit Tests
 
 ### Subscription Unit Tests
