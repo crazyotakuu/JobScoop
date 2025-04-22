@@ -3,7 +3,11 @@
 ## User Stories
 - **As a user,** I want to fetch all jobs from Indeed and Google Jobs so I can see the latest opportunities.  
 - **As a user,** I want to retrieve all of my subscriptions so I can view and manage them.  
-- **As a user,** I want to see the frequency of roles across my subscriptions to understand which positions are most common.  
+- **As a user,** I want to see the frequency of roles across my subscriptions to understand which positions are most common.
+- **As a user,** I want to see the Latest Trending roles most users are targetting.
+- **As a user,** I want to see the most popular companies subscribed by the user in a given time frame.
+- **As a user,** I want to see the most popular Job roles subscribed by the user in a given time frame.
+- **As a user,** I want to see the popular company-role combination subscribed by the users.  
 
 ## Planned Issues
 1. Implement **Fetch All Jobs from Indeed and Google Jobs** API (Backend – SP4)  
