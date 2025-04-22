@@ -181,11 +181,13 @@ const Trends = () => {
       const correlations = frequenciesData.map(item => ({
         company: item.company,
         role: item.role,
-        count: item.frequency,
+        count: item.count,
+        total:item.total,
         percentage: `${((item.frequency) * 100).toFixed(1)}%`
       }));
 
       correlations.sort((a, b) => b.count - a.count);
+      correlations.slice(0, 10);
 
       setCorrelationData(correlations);
     } catch (err) {
@@ -557,7 +559,8 @@ const Trends = () => {
                   <TableRow>
                     <TableCell>Company</TableCell>
                     <TableCell>Role</TableCell>
-                    {/* <TableCell align="right">Number of Subscribers</TableCell> */}
+                    <TableCell align="right">Number of Subscribers</TableCell>
+                    <TableCell align="right">Total Number of Subscribers</TableCell>
                     <TableCell align="right">Percentage of Users</TableCell>
                   </TableRow>
                 </TableHead>
@@ -572,7 +575,8 @@ const Trends = () => {
                           {row.company}
                         </TableCell>
                         <TableCell>{row.role}</TableCell>
-                        {/* <TableCell align="right">{row.count}</TableCell> */}
+                        <TableCell align="right">{row.count}</TableCell>
+                        <TableCell align="right">{row.total}</TableCell>
                         <TableCell align="right">{row.percentage}</TableCell>
                       </TableRow>
                     ))
