@@ -91,18 +91,18 @@ JobScoop is an one-click job fetching application designed to streamline your jo
 
 ### Installation
 
-Clone the Jobscoop repositry into your local using the command git clone https://github.com/crazyotakuu/JobScoop.git
+Clone the Jobscoop repositry into your local using the command `git clone https://github.com/crazyotakuu/JobScoop.git`
 
 #### FRONTEND 
-- Navigate to the Frontend directory in the Jobscoop application (cd jobscoop/Frontend)
-- Install dependencies using the command npm install
-- Start the Front end application using the command npm start
+- Navigate to the Frontend directory in the Jobscoop application (`cd jobscoop/Frontend`)
+- Install dependencies using the command `npm install`
+- Start the Front end application using the command `npm start`
 #### FRONTEND TESTING (UNIT TESTCASES)
-- Navigate to the Frontend directory in the Jobscoop application (cd jobscoop/Frontend)
+- Navigate to the Frontend directory in the Jobscoop application (`cd jobscoop/Frontend`)
 - To execute tests run `npm test` command to initiate unit testcases
 #### FRONTEND TESTING (CYPRESS TESTCASES)
-- Install cypress module using the command npm install cypress --save-dev
-- to execute cypress testcases use the command npx cypress open
+- Install cypress module using the command `npm install cypress --save-dev`
+- to execute cypress testcases use the command `npx cypress open`
 - choose e2e testing and hit run for the testcases
     
   
