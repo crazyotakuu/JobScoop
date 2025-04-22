@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"time"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -525,4 +526,108 @@ func TestFetchSubscriptionFrequenciesHandler(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("unmet sqlmock expectations: %v", err)
 	}
+}
+
+
+func TestFetchAllUserSubscriptionsHandler(t *testing.T) {
+    // 1. Initialize sqlmock and swap in mock DB
+    mockDB, mock, err := sqlmock.New()
+    if err != nil {
+        t.Fatalf("error initializing mock db: %v", err)
+    }
+    defer mockDB.Close()
+    db.DB = mockDB
+
+    // 2. Prepare test timestamps
+    t1 := time.Date(2025, 4, 18, 14, 30, 0, 0, time.UTC)
+    t2 := time.Date(2025, 4, 19, 9, 15, 0, 0, time.UTC)
+
+    // 3. Expect the query and return two rows
+    mock.ExpectQuery(`SELECT\s+u\.name\s+AS user_name,`).
+        WillReturnRows(sqlmock.NewRows([]string{
+            "user_name", "company_name", "date", "role_names",
+        }).
+            // Note: Postgres array literal syntax for the role_names column
+            AddRow("Abhinav", "Google", t1, "{software engineer,data engineer}").
+            AddRow("Abhinav", "Tesla", t2, "{AI engineer}"),
+        )
+
+    // 4. Perform the HTTP request
+    req := httptest.NewRequest(http.MethodGet, "/api/user-subscriptions", nil)
+    w := httptest.NewRecorder()
+    FetchAllUserSubscriptionsHandler(w, req)
+
+    // 5. Assert HTTP status
+    res := w.Result()
+    defer res.Body.Close()
+    if res.StatusCode != http.StatusOK {
+        t.Fatalf("expected status 200, got %d", res.StatusCode)
+    }
+
+    // 6. Decode response
+    var got []UserCompanySubscription
+    if err := json.NewDecoder(res.Body).Decode(&got); err != nil {
+        t.Fatalf("error decoding response JSON: %v", err)
+    }
+
+    // 7. Expect two records
+    if len(got) != 2 {
+        t.Fatalf("expected 2 records, got %d", len(got))
+    }
+
+    // 8. Locate entries by company
+    var g1, g2 *UserCompanySubscription
+    for i := range got {
+        switch got[i].Company {
+        case "Google":
+            g1 = &got[i]
+        case "Tesla":
+            g2 = &got[i]
+        }
+    }
+
+    // 9. Assertions for Google entry
+    if g1 == nil {
+        t.Error("missing entry for company Google")
+    } else {
+        if g1.User != "Abhinav" {
+            t.Errorf("Google: expected user 'Abhinav', got %q", g1.User)
+        }
+        if !g1.Date.Equal(t1) {
+            t.Errorf("Google: expected date %v, got %v", t1, g1.Date)
+        }
+        // roleNames order isn't guaranteed by SQL; compare as a map
+        wantRoles1 := map[string]bool{
+            "software engineer": true,
+            "data engineer":     true,
+        }
+        if len(g1.RoleNames) != len(wantRoles1) {
+            t.Errorf("Google: expected %d roles, got %v", len(wantRoles1), g1.RoleNames)
+        }
+        for _, r := range g1.RoleNames {
+            if !wantRoles1[r] {
+                t.Errorf("Google: unexpected role %q", r)
+            }
+        }
+    }
+
+    // 10. Assertions for Tesla entry
+    if g2 == nil {
+        t.Error("missing entry for company Tesla")
+    } else {
+        if g2.User != "Abhinav" {
+            t.Errorf("Tesla: expected user 'Abhinav', got %q", g2.User)
+        }
+        if !g2.Date.Equal(t2) {
+            t.Errorf("Tesla: expected date %v, got %v", t2, g2.Date)
+        }
+        if len(g2.RoleNames) != 1 || g2.RoleNames[0] != "AI engineer" {
+            t.Errorf("Tesla: expected [\"AI engineer\"], got %v", g2.RoleNames)
+        }
+    }
+
+    // 11. Ensure all expectations were met
+    if err := mock.ExpectationsWereMet(); err != nil {
+        t.Errorf("unmet sqlmock expectations: %v", err)
+    }
 }
