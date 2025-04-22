@@ -11,3 +11,11 @@ JobScoop is an one-click job fetching application designed to streamline your jo
 - Uday Srinivas Medisetty (Back-End)
 - Vishnu Vivek Valeti (Front-End)
 - Venkata Satya Dinesh Chandra Gupta Kolipakula Dhatri (Front-End)
+
+## INSTALLATION
+
+### **FRONTEND INSTALLATION**
+- Install Node.js into your system
+- Once you clone the Github Repositry into your local
+- execute npm i command in your terminal where the frontend code is located
+- To start the application execute npm start
