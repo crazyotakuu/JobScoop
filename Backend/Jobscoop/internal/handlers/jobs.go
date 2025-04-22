@@ -169,6 +169,65 @@ func fetchLinkedInJobs(apiKey, field, geoid, page, sort_by string) ([]map[string
 	return apiResponse, nil
 }
 
+func fetchGoogleJobs(apiKey string, query string) ([]map[string]interface{}, error) {
+	// URL encode the query
+	encodedQuery := url.QueryEscape(query)
+
+	// Construct the URL with query parameters
+	apiURL := fmt.Sprintf("https://api.scrapingdog.com/google_jobs?api_key=%s&query=%s", apiKey, encodedQuery)
+
+	// Make the HTTP request
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return nil, fmt.Errorf("error making request to Google Jobs API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %w", err)
+	}
+
+	// Parse the JSON response
+	var apiResponse struct {
+		JobsResults []map[string]interface{} `json:"jobs_results"`
+	}
+
+	err = json.Unmarshal(body, &apiResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing JSON response: %w", err)
+	}
+
+	// Process and standardize the job data to match our expected format
+	var processedJobs []map[string]interface{}
+	for _, job := range apiResponse.JobsResults {
+		// Create a new job object with standardized fields
+		processedJob := map[string]interface{}{
+			"company_name": job["company_name"],
+			"title":        job["title"],
+			"location":     job["location"],
+			"description":  job["description"],
+			"url":          job["url"],
+			"source":       "Google Jobs",
+		}
+
+		// Add apply links if available
+		if applyLinks, ok := job["apply_links"].([]interface{}); ok {
+			processedJob["apply_links"] = applyLinks
+		}
+
+		// Add extensions if available
+		if extensions, ok := job["extensions"].([]interface{}); ok {
+			processedJob["extensions"] = extensions
+		}
+
+		processedJobs = append(processedJobs, processedJob)
+	}
+
+	return processedJobs, nil
+}
+
 // Placeholder for fetchIndeedJobs function
 func fetchIndeedJobs(apiKey string, company, jobRole string) ([]map[string]interface{}, error) {
 	// Generate Indeed URL for the search
