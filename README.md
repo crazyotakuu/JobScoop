@@ -117,13 +117,13 @@ Frontend/
 ## 3. Installing Dependencies
 From within the `Frontend/` directory, install all required packages:
 ```
-`npm install`
+npm install
 ```
 ## 4. Running the Application
 
 Start the development server:
 ```
-`npm start` 
+npm start 
 ```
 The app will be available at `http://localhost:3000`.
 
@@ -134,7 +134,7 @@ The app will be available at `http://localhost:3000`.
 Run all Jest + React Testing Library tests:
 
 ```
-`npm test` 
+npm test 
 ```
 ### 5.2 End‑to‑End Tests
 
@@ -142,8 +142,8 @@ Install Cypress (if you haven’t already) and launch the test runner:
 
 ```
 
-`npm install cypress --save-dev
-npx cypress open` 
+npm install cypress --save-dev
+npx cypress open 
 ```
 In the Cypress UI, select **e2e** and run the JobScoop test suite.
 
