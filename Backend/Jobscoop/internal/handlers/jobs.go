@@ -155,11 +155,72 @@ func fetchLinkedInJobs(apiKey, field, geoid, page, sort_by string) ([]map[string
 	return apiResponse, nil
 }
 
+// Placeholder for fetchIndeedJobs function
+func fetchIndeedJobs(apiKey string, company, jobRole string) ([]map[string]interface{}, error) {
+	// Generate Indeed URL for the search
+	indeedURL := generateIndeedURL(jobRole, company)
+
+	// URL encode the Indeed URL
+	encodedURL := url.QueryEscape(indeedURL)
+
+	// Construct the API URL
+	apiURL := fmt.Sprintf("https://api.scrapingdog.com/indeed?api_key=%s&url=%s", apiKey, encodedURL)
+	fmt.Println("Indeed API URL:", apiURL)
+
+	// Send GET request to the API
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request to Indeed API: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read Indeed API response body: %v", err)
+	}
+
+	// Check if status is OK
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get valid response from Indeed API, status code: %d", resp.StatusCode)
+	}
+
+	// Parse the JSON response - try first as array of Jobs/Metadata
+	var result []json.RawMessage
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		// If that fails, try as a direct array of jobs
+		var jobs []Job
+		err = json.Unmarshal(body, &jobs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal Indeed API JSON response: %v", err)
+		}
+
+		// Convert Jobs to map[string]interface{} for consistency with other job sources
+		return convertJobsToMaps(jobs), nil
+	}
+
+	// Process the mixed array of Job and Metadata objects
+	var jobs []Job
+	for _, obj := range result {
+		// Try unmarshalling the object as a Job
+		var job Job
+		if err := json.Unmarshal(obj, &job); err == nil {
+			jobs = append(jobs, job)
+		}
+		// We can ignore the metadata for now since we're just collecting jobs
+	}
+
+	// Convert Jobs to map[string]interface{} for consistency with other job sources
+	return convertJobsToMaps(jobs), nil
+}
+
 func fetchJobs(company string, jobRole string, w http.ResponseWriter) ([]map[string]interface{}, error) {
 	apiKey := os.Getenv("SCRAPING_DOG_API_KEY")
 
-	jobRole_linkedin := jobRole + " AND " + company // Add space around AND
-	geoid := "103644278"                            // Example geoid for location
+	// Fetch LinkedIn jobs
+	jobRole_linkedin := jobRole + " AND " + company
+	geoid := "103644278" // Example geoid for location
 	sort_by := "week"
 	page := "1"
 	linkedinJobs, err := fetchLinkedInJobs(apiKey, jobRole_linkedin, geoid, page, sort_by)
@@ -168,9 +229,38 @@ func fetchJobs(company string, jobRole string, w http.ResponseWriter) ([]map[str
 		return nil, err
 	}
 
+	// Fetch Google jobs
+	googleQuery := fmt.Sprintf("%s AND %s", company, jobRole)
+	googleJobs, err := fetchGoogleJobs(apiKey, googleQuery)
+	if err != nil {
+		// Log the error but continue with LinkedIn jobs
+		fmt.Printf("Error fetching Google jobs: %v\n", err)
+	}
+
+	// Fetch Indeed jobs
+	indeedJobs, err := fetchIndeedJobs(apiKey, company, jobRole)
+	if err != nil {
+		// Log the error but continue with other results
+		fmt.Printf("Error fetching Indeed jobs: %v\n", err)
+	}
+
+	// Combine jobs from all sources
+	var allJobs []map[string]interface{}
+	allJobs = append(allJobs, linkedinJobs...)
+
+	// Add Google jobs if available
+	if googleJobs != nil && len(googleJobs) > 0 {
+		allJobs = append(allJobs, googleJobs...)
+	}
+
+	// Add Indeed jobs if available
+	if indeedJobs != nil && len(indeedJobs) > 0 {
+		allJobs = append(allJobs, indeedJobs...)
+	}
+
 	// Filter jobs to include only those matching both company name and role
 	var filteredJobs []map[string]interface{}
-	for _, job := range linkedinJobs {
+	for _, job := range allJobs {
 		// Get company name from job data
 		companyName, ok := job["company_name"].(string)
 		if !ok {
@@ -178,10 +268,14 @@ func fetchJobs(company string, jobRole string, w http.ResponseWriter) ([]map[str
 			continue
 		}
 
-		// Get job position from job data
-		jobPosition, ok := job["job_position"].(string)
-		if !ok {
-			// Skip if job_position is not a string or doesn't exist
+		// Get job position from job data - try different field names
+		var jobPosition string
+		if pos, ok := job["job_position"].(string); ok {
+			jobPosition = pos
+		} else if title, ok := job["title"].(string); ok {
+			jobPosition = title
+		} else {
+			// Skip if we can't find a job title/position
 			continue
 		}
 
@@ -210,23 +304,8 @@ func fetchJobs(company string, jobRole string, w http.ResponseWriter) ([]map[str
 		// Add to filtered results if both company and role match
 		if companyMatches && roleMatches {
 			filteredJobs = append(filteredJobs, job)
-		} else {
-			// Debug info for rejected jobs
-			reason := ""
-			if !companyMatches {
-				reason += "Company mismatch "
-			}
-			if !roleMatches {
-				reason += "Role mismatch "
-			}
-			// fmt.Printf("Filtered out: '%s' at '%s' - Reason: %s\n",
-			//  jobPosition, companyName, reason)
 		}
 	}
-
-	// Add debugging info
-	// fmt.Printf("Found %d total jobs for search '%s', filtered to %d jobs matching company '%s' and role '%s'\n",
-	//  len(linkedinJobs), jobRole_linkedin, len(filteredJobs), company, jobRole)
 
 	return filteredJobs, nil
 }
